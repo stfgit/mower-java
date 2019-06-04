@@ -1,11 +1,11 @@
 # MowItNow
 
 ## Usage
-java -jar <jarfile> [filePath]
+java -jar <jarfile> [filePath]  
 	filePath: Optionnel. Le fichier de test est présent dans l'archive et est utilisé par défaut si non précisé.
 
 ## Test
-Des tests unitaires sont fournis. "testExecuteXebiaTest()" permet de lancer le test sur le fichier d'entrée fourni.
+Des tests unitaires sont présents. "testExecuteXebiaTest()" permet de tester le système avec le fichier d'entrée fourni.
 
 ## Spécifications
 <pre>
