@@ -1,8 +1,9 @@
 # MowItNow
 
 ## Usage
-java -jar <jarfile> [filePath]  
-	filePath: Optionnel. Le fichier de test est présent dans l'archive et est utilisé par défaut si non précisé.
+java -jar mower-java-0.0.1-SNAPSHOT.jar [filePath]  
+	filePath: Optionnel.  
+	Le fichier "commandsXebiaTest.txt" est présent dans l'archive et est utilisé par défaut si non précisé.
 
 ## Test
 Des tests unitaires sont présents. "testExecuteXebiaTest()" permet de tester le système avec le fichier d'entrée fourni.
