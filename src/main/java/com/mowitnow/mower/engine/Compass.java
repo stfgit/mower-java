@@ -97,15 +97,15 @@ enum Compass {
 		}
 	}
 	
-	int getDeltaX() {
+	final int getDeltaX() {
 		return deltaX;
 	}
 
-	int getDeltaY() {
+	final int getDeltaY() {
 		return deltaY;
 	}
 
-	public char getPointer() {
+	public final char getPointer() {
 		return pointer;
 	}	
 	

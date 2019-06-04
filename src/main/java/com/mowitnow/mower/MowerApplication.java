@@ -1,6 +1,6 @@
 package com.mowitnow.mower;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +21,14 @@ public class MowerApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		String commandsFilePath = "classpath:commands.txt";
+		String commandsFilePath = "commandsXebiaTest.txt";
 		if (args.length > 0) {
-			commandsFilePath = args[0];
+			commandsFilePath = "file:" + args[0];
 		}
 		try {
 			remote.executeCommands(commandsFilePath);
-			remote.displayState();
 			
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			LOGGER.error("File doesn't exist.", e);
 		}
 	}
