@@ -1,6 +1,6 @@
 package com.mowitnow.mower.engine;
 
-public enum Compass {
+enum Compass {
 	
 	EAST('E', 1, 0) {
 
@@ -97,11 +97,11 @@ public enum Compass {
 		}
 	}
 	
-	public int getDeltaX() {
+	int getDeltaX() {
 		return deltaX;
 	}
 
-	public int getDeltaY() {
+	int getDeltaY() {
 		return deltaY;
 	}
 

@@ -7,58 +7,64 @@ import org.slf4j.LoggerFactory;
 
 public final class Mower {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Mower.class);
-
 	
+	private final Lawn lawn;
 	private int x, y;
 	private Compass compass;
-	private String name;
+	private final String name;
 
-	public Mower(int x, int y, char pointer) {
-		this(x, y, Compass.byPointer(pointer), UUID.randomUUID().toString());
+	Mower(final Lawn lawn) {
+		this.lawn = lawn;
+		this.name = UUID.randomUUID().toString();
 	}
-
-	public Mower(int x, int y, Compass compass, String name) {
-		if (Lawn.GRID.checkAccess(x, y)) {
+	
+	Mower(final Lawn lawn, String name) {
+		this.lawn = lawn;
+		this.name = name;
+	}
+	
+	Mower start(int x, int y, char pointer) {
+		LOGGER.debug("Start mower. x={} y={} pointer={}", x, y, pointer);
+		if (lawn.checkAccess(x, y)) {
 			this.x = x;
 			this.y = y;
-			this.compass = compass;
-			this.name = name;
-			Lawn.GRID.addMower(this);
-			LOGGER.debug("Mower started: name=" + name);
+			this.compass = Compass.byPointer(pointer);
+			LOGGER.debug("Mower started: name={}", name);
 		} else {
-			throw new IllegalStateException("Bad start position: x=" + x + ", y=" + x);
+			throw new IllegalStateException("Bad start position: x=" + x + ", y=" + y);
 		}
+		return this;
 	}
 
 	private void left() {
 		compass = compass.left();
-		LOGGER.debug("Mower turned left: " + toString());
+		LOGGER.debug("Mower turned left: {}", toString());
 	}
 	
 	private void right() {
 		compass = compass.right();
-		LOGGER.debug("Mower turned right: " + toString());
+		LOGGER.debug("Mower turned right: {}", toString());
 	}
 	
 	private boolean forward() {
 		final int toX = x + compass.getDeltaX();
 		final int toY = y + compass.getDeltaY();
 		
-		if (Lawn.GRID.checkAccess(toX, toY)) {
+		if (lawn.checkAccess(toX, toY)) {
 			x = toX;
 			y = toY;
-			LOGGER.debug("Mower moved: " + toString());
+			LOGGER.debug("Mower moved: {}", toString());
 			return true;
 		} else {
-			LOGGER.warn("Mower blocked: " + toString());
+			LOGGER.warn("Mower blocked: {}", toString());
 			return false;
 		}
 		
 	}
 
-	public void execute(String commands) {
+	void execute(String commands) {
 		for (char command : commands.toCharArray()) {
-			LOGGER.debug("Mower " + name + " received '" + command + "'");
+			LOGGER.debug("Mower {} received '{}'", name, command);
 			switch (command) {
 			case 'G':
 				left();
@@ -70,7 +76,7 @@ public final class Mower {
 				forward();
 				break;
 			default:
-				LOGGER.warn("Unknown command: '" + command + "'");
+				LOGGER.warn("Unknown command: '{}'", command);
 			}
 		}
 	}
@@ -81,12 +87,11 @@ public final class Mower {
 	public int getY() {
 		return y;
 	}
-	public Compass getCompass() {
+	Compass getCompass() {
 		return compass;
 	}
-
-	public void setName(String name) {
-		this.name = name;
+	public char getPointer() {
+		return compass.getPointer();
 	}
 
 	@Override
