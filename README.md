@@ -1,12 +1,39 @@
 # MowItNow
 
 ## Usage
-java -jar mower-java-0.0.1-SNAPSHOT.jar [filePath]  
-	filePath: Optionnel.  
-	Le fichier "commandsXebiaTest.txt" est présent dans l'archive et est utilisé par défaut si non précisé.
+**java -jar mower-java-0.0.1-SNAPSHOT.jar [filePath]**  
+  
+**filePath**: Optionnel. Chemin absolu.  
+Si aucun argument n'est fourni, le fichier "commandsXebiaTest.txt" présent dans l'archive est utilisé.  
+Ce fichier correspond au fichier d'entrée fourni avec l'exercice.
 
 ## Test
-Des tests unitaires sont présents. "testExecuteXebiaTest()" permet de tester le système avec le fichier d'entrée fourni.
+Des tests unitaires sont présents.  
+"testExecuteXebiaTest()" permet de tester le système avec le fichier d'entrée fourni.
+
+## Stack
+JDK >= 1.8  
+Maven  
+Spring Boot
+
+## Fonctionnement
+Les tondeuses (**com.mowitnow.mower.engine.Mower**) sont pilotées par la classe **com.mowitnow.mower.engine.Remote** (Spring bean).  
+La méthode qui permet d'exécuter un fichier de test est **Remote::executeCommands**:  
+
+**public final java.util.List<Mower> executeCommands(java.lang.String filePath) throws java.io.IOException** 
+ 
+Execute commands from file (file system or resources).  
+
+**Parameters:**  
+**filePath** - The file path if it's in the jar resources or a "file:" URL if it's on the file system.  
+
+("commandsXebiaTest.txt" or "file:/tmp/commandsXebiaTest.txt") 
+ 
+**Returns:**  
+List of started mowers.  
+**Throws:**  
+java.io.IOException - File opening issue.
+***
 
 ## Spécifications
 <pre>

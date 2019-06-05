@@ -31,7 +31,7 @@ public final class Remote {
    * @throws IOException
    * File opening issue.
    */
-  public List<Mower> executeCommands(final String filePath) throws IOException {
+  public final List<Mower> executeCommands(final String filePath) throws IOException {
     List<Mower> mowers = new ArrayList<Mower>();
     Scanner scanner = null;
 
@@ -83,7 +83,7 @@ public final class Remote {
    * @param topRightX 0 based
    * @param topRightY 0 based
    */
-  public void prepareMowing(int topRightX, int topRightY) {
+  public final void prepareMowing(int topRightX, int topRightY) {
     lawn.prepare(topRightX, topRightY);
   }
 
@@ -94,7 +94,7 @@ public final class Remote {
    * @param pointer 'N', 'E', 'S' or 'W'
    * @return The started mower.
    */
-  public Mower startMower(int x, int y, char pointer) {
+  public final Mower startMower(int x, int y, char pointer) {
     Mower mower = new Mower(lawn);
     return mower.start(x, y, pointer);
   }

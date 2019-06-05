@@ -1,117 +1,118 @@
 package com.mowitnow.mower.engine;
 
 enum Compass {
-	
-	EAST('E', 1, 0) {
 
-		@Override
-		Compass left() {
-			return NORTH;
-		}
+  EAST('E', 1, 0) {
 
-		@Override
-		Compass right() {
-			return SOUTH;
-		}
+    @Override
+    Compass left() {
+      return NORTH;
+    }
 
-	},
-	NORTH('N', 0, 1) {
+    @Override
+    Compass right() {
+      return SOUTH;
+    }
 
-		@Override
-		Compass left() {
-			return WEST;
-		}
+  },
+  NORTH('N', 0, 1) {
 
-		@Override
-		Compass right() {
-			return EAST;
-		}
+    @Override
+    Compass left() {
+      return WEST;
+    }
 
-	},
-	WEST('W', -1, 0) {
+    @Override
+    Compass right() {
+      return EAST;
+    }
 
-		@Override
-		Compass left() {
-			return SOUTH;
-		}
+  },
+  WEST('W', -1, 0) {
 
-		@Override
-		Compass right() {
-			return NORTH;
-		}
+    @Override
+    Compass left() {
+      return SOUTH;
+    }
 
-	},
-	SOUTH('S', 0, -1) {
+    @Override
+    Compass right() {
+      return NORTH;
+    }
 
-		@Override
-		Compass left() {
-			return EAST;
-		}
+  },
+  SOUTH('S', 0, -1) {
 
-		@Override
-		Compass right() {
-			return WEST;
-		}
+    @Override
+    Compass left() {
+      return EAST;
+    }
 
-	},
-	VOID('V', 0, 0) {
+    @Override
+    Compass right() {
+      return WEST;
+    }
 
-		@Override
-		Compass left() {
-			return VOID;
-		}
+  },
+  VOID('V', 0, 0) {
 
-		@Override
-		Compass right() {
-			return VOID;
-		}
+    @Override
+    Compass left() {
+      return VOID;
+    }
 
-	};
+    @Override
+    Compass right() {
+      return VOID;
+    }
 
-	private final char pointer;
-	private final int deltaX;
-	private final int deltaY;
+  };
 
-	private Compass(char pointer, int deltaX, int deltaY) {
-		this.pointer = pointer;
-		this.deltaX = deltaX;
-		this.deltaY = deltaY;
-	}
-	
-	abstract Compass left();
-	abstract Compass right();
-	
-	static final Compass byPointer(char pointer) {
-		switch (pointer) {
-			case 'E': 
-				return Compass.EAST;
-			case 'N': 
-				return Compass.NORTH;
-			case 'W': 
-				return Compass.WEST;
-			case 'S': 
-				return Compass.SOUTH;
-			default:
-				System.out.println("WARN - Unknown cardinal point: " + pointer);
-				return Compass.VOID;
-		}
-	}
-	
-	final int getDeltaX() {
-		return deltaX;
-	}
+  private final char pointer;
+  private final int deltaX;
+  private final int deltaY;
 
-	final int getDeltaY() {
-		return deltaY;
-	}
+  private Compass(char pointer, int deltaX, int deltaY) {
+    this.pointer = pointer;
+    this.deltaX = deltaX;
+    this.deltaY = deltaY;
+  }
 
-	public final char getPointer() {
-		return pointer;
-	}	
-	
-	@Override
-	public String toString() {
-		return "Compass [" + pointer + "]";
-	}
-	
+  abstract Compass left();
+
+  abstract Compass right();
+
+  static final Compass byPointer(char pointer) {
+    switch (pointer) {
+      case 'E':
+        return Compass.EAST;
+      case 'N':
+        return Compass.NORTH;
+      case 'W':
+        return Compass.WEST;
+      case 'S':
+        return Compass.SOUTH;
+      default:
+        System.out.println("WARN - Unknown cardinal point: " + pointer);
+        return Compass.VOID;
+    }
+  }
+
+  final int getDeltaX() {
+    return deltaX;
+  }
+
+  final int getDeltaY() {
+    return deltaY;
+  }
+
+  public final char getPointer() {
+    return pointer;
+  }
+
+  @Override
+  public String toString() {
+    return "Compass [" + pointer + "]";
+  }
+
 }
