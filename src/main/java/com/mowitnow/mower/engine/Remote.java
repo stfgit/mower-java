@@ -2,6 +2,7 @@ package com.mowitnow.mower.engine;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -68,6 +69,9 @@ public final class Remote {
       }
     } catch (IOException exception) {
       LOGGER.error("Failed to read file: {}", filePath);
+      throw exception;
+    } catch (InputMismatchException exception) {
+      LOGGER.error("File badly formatted: {}", filePath);
       throw exception;
     } finally {
       if (null != scanner) {
