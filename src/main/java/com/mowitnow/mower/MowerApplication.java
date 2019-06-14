@@ -5,14 +5,10 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 
-import com.mowitnow.mower.engine.Mower;
 import com.mowitnow.mower.engine.Remote;
 
 @SpringBootApplication
@@ -39,11 +35,4 @@ public class MowerApplication implements CommandLineRunner {
   public static void main(String[] args) {
     SpringApplication.run(MowerApplication.class, args);
   }
-
-  @Bean
-  @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-  public Mower createMower() {
-    return new Mower();
-  }
-
 }
