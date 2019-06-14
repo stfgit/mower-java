@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class Lawn {
+public final class Lawn implements Cloneable {
   private static final Logger LOGGER = LoggerFactory.getLogger(Lawn.class);
 
   private int width = -1;
@@ -34,7 +34,13 @@ public final class Lawn {
   }
 
   @Override
+  protected Lawn clone() throws CloneNotSupportedException {
+    return (Lawn) super.clone();
+  }
+  
+  @Override
   public String toString() {
     return "Lawn [width=" + width + ", height=" + height + "]";
   }
+
 }

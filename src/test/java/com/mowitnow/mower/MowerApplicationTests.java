@@ -23,7 +23,7 @@ import com.mowitnow.mower.engine.Remote;
 public class MowerApplicationTests {
 
   @Autowired
-  private Remote remote;
+  private Remote remote;    
 
   @Test
   public final void testMowerStart() {
@@ -96,8 +96,9 @@ public class MowerApplicationTests {
 
   @Test
   public void testExecuteXebiaTest() {
+    List<Mower> mowers;
     try {
-      List<Mower> mowers = remote.executeCommands("commandsXebiaTest.txt");
+      mowers = remote.executeCommands("commandsXebiaTest.txt");
 
       assertEquals(2, mowers.size());
 

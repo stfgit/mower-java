@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public final class Mower {
   private static final Logger LOGGER = LoggerFactory.getLogger(Mower.class);
@@ -12,20 +13,15 @@ public final class Mower {
   private static final char RIGHT = 'D';
   private static final char FORWARD = 'A';
 
-  private final Lawn lawn;
+  @Autowired
+  private Lawn lawn;
   private int x;
   private int y;
   private Compass compass;
   private final String name;
 
-  Mower(final Lawn lawn) {
-    this.lawn = lawn;
+  public Mower() {
     this.name = UUID.randomUUID().toString();
-  }
-
-  Mower(final Lawn lawn, String name) {
-    this.lawn = lawn;
-    this.name = name;
   }
 
   Mower start(int x, int y, char pointer) {

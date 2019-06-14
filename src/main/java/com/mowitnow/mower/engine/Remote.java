@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -19,18 +20,21 @@ public final class Remote {
   @Autowired
   private Lawn lawn;
 
-  public Remote() {
-    // Empty
+  private ObjectProvider<Mower> mowerProvider;
+
+  @Autowired
+  public Remote(ObjectProvider<Mower> mowerProvider) {
+    this.mowerProvider = mowerProvider;
   }
 
   /**
    * Execute commands from file (file system or resources).
+   * 
    * @param filePath The file path if it's in the jar resources or a "file:" URL
    *                 if it's on the file system. ("commandsXebiaTest.txt" or
-   *                 "file:/tmp/commandsXebiaTest.txt")
+   *                 "file:/tmp/commandsXebiaTest.txt").
    * @return List of started mowers.
-   * @throws IOException
-   * File opening issue.
+   * @throws IOException File opening issue.
    */
   public final List<Mower> executeCommands(final String filePath) throws IOException {
     List<Mower> mowers = new ArrayList<Mower>();
@@ -84,6 +88,7 @@ public final class Remote {
 
   /**
    * Sets lawn's grid.
+   * 
    * @param topRightX 0 based
    * @param topRightY 0 based
    */
@@ -93,13 +98,14 @@ public final class Remote {
 
   /**
    * Creates and puts mower in place.
+   * 
    * @param x       0 based
    * @param y       0 based
    * @param pointer 'N', 'E', 'S' or 'W'
    * @return The started mower.
    */
   public final Mower startMower(int x, int y, char pointer) {
-    Mower mower = new Mower(lawn);
+    Mower mower = mowerProvider.getObject();
     return mower.start(x, y, pointer);
   }
 
