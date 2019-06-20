@@ -9,7 +9,7 @@ Ce fichier correspond au fichier d'entrée fourni avec l'exercice.
 
 ## Test
 Des tests unitaires sont présents.  
-"testExecuteXebiaTest()" permet de tester le système avec le fichier d'entrée fourni.
+"testExecuteBizTest()" permet de tester le système avec le fichier d'entrée fourni.
 
 ## Stack
 JDK >= 1.8  
@@ -27,7 +27,7 @@ Execute commands from file (file system or resources).
 **Parameters:**  
 **filePath** - The file path if it's in the jar resources or a "file:" URL if it's on the file system.  
 
-("commandsXebiaTest.txt" or "file:/tmp/commandsXebiaTest.txt") 
+("commandsTest.txt" or "file:/tmp/commandsTest.txt") 
  
 **Returns:**  
 List of started mowers.  
@@ -35,7 +35,7 @@ List of started mowers.
 java.io.IOException - File opening issue.
 ***
 
-## Spécifications
+## Requirements
 <pre>
 La société MowItNow a décidé de développer une tondeuse à gazon automatique, destinée aux surfaces rectangulaires.
 

@@ -20,7 +20,7 @@ public class MowerApplication implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
-    String commandsFilePath = "commandsXebiaTest.txt";
+    String commandsFilePath = "commandsTest.txt";
     if (args.length > 0) {
       commandsFilePath = "file:" + args[0];
     }

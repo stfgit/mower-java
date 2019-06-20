@@ -95,10 +95,10 @@ public class MowerApplicationTests {
   }
 
   @Test
-  public void testExecuteXebiaTest() {
+  public void testExecuteBizTest() {
     List<Mower> mowers;
     try {
-      mowers = remote.executeCommands("commandsXebiaTest.txt");
+      mowers = remote.executeCommands("commandsTest.txt");
 
       assertEquals(2, mowers.size());
 

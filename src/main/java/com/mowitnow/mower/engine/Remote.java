@@ -31,8 +31,8 @@ public final class Remote {
    * Execute commands from file (file system or resources).
    * 
    * @param filePath The file path if it's in the jar resources or a "file:" URL
-   *                 if it's on the file system. ("commandsXebiaTest.txt" or
-   *                 "file:/tmp/commandsXebiaTest.txt").
+   *                 if it's on the file system. ("commandsTest.txt" or
+   *                 "file:/tmp/commandsTest.txt").
    * @return List of started mowers.
    * @throws IOException File opening issue.
    */

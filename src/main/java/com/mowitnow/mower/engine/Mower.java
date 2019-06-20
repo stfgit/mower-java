@@ -31,6 +31,11 @@ public final class Mower {
 
   Mower start(int x, int y, char pointer) {
     LOGGER.debug("Start mower. x={} y={} pointer={}", x, y, pointer);
+    try {
+      lawn = lawn.clone();  // Clients (Remote.Class instances in sample) can switch  
+    } catch (CloneNotSupportedException e) {
+      LOGGER.error("Lawn Class must be Cloneable. Fatal internal crash!!");
+    }
     if (lawn.checkAccess(x, y)) {
       this.x = x;
       this.y = y;
