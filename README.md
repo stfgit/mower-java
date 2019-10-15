@@ -1,5 +1,5 @@
 # MowItNow
-
+[![Build Status](https://dev.azure.com/devstf/first/_apis/build/status/stfgit.mower-java?branchName=master)](https://dev.azure.com/devstf/first/_build/latest?definitionId=1&branchName=master)
 ## Usage
 **java -jar mower-java-0.0.1-SNAPSHOT.jar [filePath]**  
   
