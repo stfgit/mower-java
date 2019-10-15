@@ -4,7 +4,7 @@
 **java -jar mower-java-0.0.1-SNAPSHOT.jar [filePath]**  
   
 **filePath**: Optionnel. Chemin absolu.  
-Si aucun argument n'est fourni, le fichier "commandsXebiaTest.txt" présent dans l'archive est utilisé.  
+Si aucun argument n'est fourni, le fichier "commandsTest.txt" présent dans l'archive est utilisé.  
 Ce fichier correspond au fichier d'entrée fourni avec l'exercice.
 
 ## Test
