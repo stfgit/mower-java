@@ -17,7 +17,25 @@
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
-
+	<repositories>
+		<repository>
+  		<id>dev-azure-com-devstf-devstf</id>
+  		<url>https://pkgs.dev.azure.com/devstf/_packaging/devstf/maven/v1</url>
+  		<releases>
+    			<enabled>true</enabled>
+  		</releases>
+  		<snapshots>
+    			<enabled>true</enabled>
+  		</snapshots>
+		</repository>	
+	</repositories>
+	
+	<distributionManagement>
+		<repository>
+  		<id>dev-azure-com-devstf-devstf</id>
+  		<url>https://pkgs.dev.azure.com/devstf/_packaging/devstf/maven/v1</url>
+		</repository>
+	</distributionManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
