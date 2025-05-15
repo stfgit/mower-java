@@ -1,0 +1,46 @@
+package com.mowitnow.mower.engine;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+@Component
+public final class Lawn implements Cloneable {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Lawn.class);
+
+  private int width = -1;
+  private int height = -1;
+
+  public Lawn() {
+    // Empty
+  }
+
+  void prepare(int topRightX, int topRightY) {
+    LOGGER.debug("Prepare lawn. topRightX=" + topRightX + " topRightY=" + topRightY);
+    width = topRightX + 1;
+    height = topRightY + 1;
+  }
+
+  final boolean checkAccess(final int x, final int y) {
+    return ((x < width) && (y < height));
+  }
+
+  final int getWidth() {
+    return width;
+  }
+
+  final int getHeight() {
+    return height;
+  }
+
+  @Override
+  protected Lawn clone() throws CloneNotSupportedException {
+    return (Lawn) super.clone();
+  }
+  
+  @Override
+  public String toString() {
+    return "Lawn [width=" + width + ", height=" + height + "]";
+  }
+
+}
