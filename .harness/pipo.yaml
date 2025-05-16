@@ -27,7 +27,7 @@ pipeline:
                   name: Test
                   identifier: Test
                   spec:
-                    connectorRef: account.Nexus_Docker_Registry
+                    connectorRef: account.harnessImage
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
