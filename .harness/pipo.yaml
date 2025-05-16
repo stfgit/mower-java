@@ -25,11 +25,16 @@ pipeline:
               automountServiceAccountToken: true
               nodeSelector: {}
               os: Linux
-          steps:
-            - name: test
-              type: run
-              spec:
-                container: maven:3-jdk-10
-                script: |-
-                  mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-                  mvn test -B
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Test
+                  identifier: Test
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      mvn test -B
