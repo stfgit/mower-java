@@ -1,0 +1,35 @@
+pipeline:
+  name: mower-ci-pipe
+  identifier: mowercipipe
+  projectIdentifier: Ramp_up
+  orgIdentifier: STF_Org
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: pvtmower
+        build: <+input>
+  stages:
+    - stage:
+        name: Build and test
+        identifier: Build_and_test
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: account.tooling
+              namespace: stf-mower
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          steps:
+            - name: test
+              type: run
+              spec:
+                container: maven:3-jdk-10
+                script: |-
+                  mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                  mvn test -B
