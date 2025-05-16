@@ -11,7 +11,7 @@ pipeline:
         description: ""
         type: CI
         spec:
-          cloneCodebase: false
+          cloneCodebase: true
           infrastructure:
             type: KubernetesDirect
             spec:
@@ -38,3 +38,9 @@ pipeline:
             paths: []
           buildIntelligence:
             enabled: false
+  properties:
+    ci:
+      codebase:
+        connectorRef: pvtmower
+        build: <+input>
+        sparseCheckout: []
