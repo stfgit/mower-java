@@ -21,7 +21,7 @@ pipeline:
             type: KubernetesDirect
             spec:
               connectorRef: account.tooling
-              namespace: stf-mower
+              namespace: default
               automountServiceAccountToken: true
               nodeSelector: {}
               os: Linux
