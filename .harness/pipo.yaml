@@ -4,11 +4,6 @@ pipeline:
   projectIdentifier: Ramp_up
   orgIdentifier: STF_Org
   tags: {}
-  properties:
-    ci:
-      codebase:
-        connectorRef: pvtmower
-        build: <+input>
   stages:
     - stage:
         name: Build and test
@@ -16,7 +11,7 @@ pipeline:
         description: ""
         type: CI
         spec:
-          cloneCodebase: true
+          cloneCodebase: false
           infrastructure:
             type: KubernetesDirect
             spec:
@@ -38,3 +33,8 @@ pipeline:
                     command: |-
                       mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
                       mvn test -B
+          caching:
+            enabled: false
+            paths: []
+          buildIntelligence:
+            enabled: false
