@@ -1,0 +1,46 @@
+pipeline:
+  name: mower-ci-pipe
+  identifier: mowercipipe
+  projectIdentifier: Ramp_up
+  orgIdentifier: STF_Org
+  tags: {}
+  stages:
+    - stage:
+        name: Build and test
+        identifier: Build_and_test
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: account.tooling
+              namespace: build
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Test
+                  identifier: Test
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      mvn test -B
+          caching:
+            enabled: false
+            paths: []
+          buildIntelligence:
+            enabled: false
+  properties:
+    ci:
+      codebase:
+        connectorRef: pvtmower
+        build: <+input>
+        sparseCheckout: []
