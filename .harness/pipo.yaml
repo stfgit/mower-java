@@ -31,7 +31,7 @@ pipeline:
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
-                      mvn clean install --settings settings.xml -o -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
                       mvn test -B
           caching:
             enabled: false
