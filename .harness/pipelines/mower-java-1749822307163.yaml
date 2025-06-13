@@ -11,25 +11,35 @@ pipeline:
         repoName: stfgit/mower-java
   stages:
     - stage:
-        identifier: build
-        name: build
+        name: Build and test
+        identifier: Build_and_test
+        description: ""
+        type: CI
         spec:
-          caching:
-            enabled: true
           cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: org.kubdesktop
+              namespace: mower
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
           execution:
             steps:
               - step:
-                  identifier: echo
-                  name: echo
-                  spec:
-                    command: echo hello world
-                  timeout: ""
                   type: Run
-          platform:
-            arch: Amd64
-            os: Linux
-          runtime:
-            spec: {}
-            type: Cloud
-        type: CI
+                  name: Test
+                  identifier: Test
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      mvn test -B
+          caching:
+            enabled: false
+            paths: []
+          buildIntelligence:
+            enabled: false
