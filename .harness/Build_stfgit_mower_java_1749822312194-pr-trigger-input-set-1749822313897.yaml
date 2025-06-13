@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_stfgit_mower_java_1749822312194-pr-trigger-input-set
+  identifier: Build_stfgit_mower_java_1749822312194prtriggerinputset
+  orgIdentifier: stf
+  projectIdentifier: Mower
+  pipeline:
+    identifier: Build_stfgit_mower_java_1749822312194
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
