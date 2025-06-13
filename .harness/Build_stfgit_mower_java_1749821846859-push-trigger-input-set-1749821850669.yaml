@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_stfgit_mower_java_1749821846859-push-trigger-input-set
+  identifier: Build_stfgit_mower_java_1749821846859pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: Mower
+  pipeline:
+    identifier: Build_stfgit_mower_java_1749821846859
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
