@@ -6,9 +6,10 @@ pipeline:
   properties:
     ci:
       codebase:
+        connectorRef: org.gitstf
+        repoName: mower-java
         build: <+input>
-        connectorRef: account.Github
-        repoName: stfgit/mower-java
+        sparseCheckout: []
   stages:
     - stage:
         name: Build and test
@@ -32,7 +33,7 @@ pipeline:
                   name: Test
                   identifier: Test
                   spec:
-                    connectorRef: account.harnessImage
+                    connectorRef: Dockerhub
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
