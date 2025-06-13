@@ -1,0 +1,35 @@
+pipeline:
+  identifier: Build_stfgit_mower_java_1749821846859
+  name: Build mower-java
+  orgIdentifier: default
+  projectIdentifier: Mower
+  properties:
+    ci:
+      codebase:
+        build: <+input>
+        connectorRef: account.Github
+        repoName: stfgit/mower-java
+  stages:
+    - stage:
+        identifier: build
+        name: build
+        spec:
+          caching:
+            enabled: true
+          cloneCodebase: true
+          execution:
+            steps:
+              - step:
+                  identifier: echo
+                  name: echo
+                  spec:
+                    command: echo hello world
+                  timeout: ""
+                  type: Run
+          platform:
+            arch: Amd64
+            os: Linux
+          runtime:
+            spec: {}
+            type: Cloud
+        type: CI
