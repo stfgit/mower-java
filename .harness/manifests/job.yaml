@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mower-java-<+pipeline.executionId>
+  namespace: <+infra.namespace>
+  labels:
+    app: mower-java
+    job-id: "<+pipeline.executionId>"
+    environment: <+env.name>
+spec:
+  # Configuration du Job
+  completions: 1              # Nombre d'exécutions réussies attendues
+  parallelism: 1              # Nombre de pods en parallèle
+  backoffLimit: 3             # Nombre de tentatives en cas d'échec
+  activeDeadlineSeconds: 600  # Timeout global (10 minutes)
+  ttlSecondsAfterFinished: 300 # Nettoyage auto après 5 min
+  
+  template:
+    metadata:
+      labels:
+        app: mower-java
+        job-id: "<+pipeline.executionId>"
+    spec:
+      restartPolicy: Never  # OBLIGATOIRE pour les Jobs
+      containers:
+      - name: mower-java
+        image: <+artifact.image>
+        
+        # Configuration de l'exécution
+        command: ["java"]
+        args: [
+          "-Xmx256m",
+          "-Xms128m",
+          "-jar",
+          "/app/mower-java.jar"
+          # Ajoutez ici les arguments spécifiques à votre mower
+          # Par exemple : "--input-file", "/data/input.txt"
+        ]
+        
+        # Variables d'environnement
+        env:
+        - name: JOB_ID
+          value: "<+pipeline.executionId>"
+        - name: ENVIRONMENT
+          value: <+env.name>
+        - name: LOG_LEVEL
+          value: "INFO"
+        
+        # Ressources (adaptées pour batch)
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        
+        # Montage de volumes si nécessaire
+        volumeMounts:
+        - name: input-data
+          mountPath: /data
+          readOnly: true
+        - name: output-data
+          mountPath: /output
+      
+      # Volumes pour données d'entrée/sortie
+      volumes:
+      - name: input-data
+        configMap:
+          name: mower-input-data
+      - name: output-data
+        emptyDir: {}
