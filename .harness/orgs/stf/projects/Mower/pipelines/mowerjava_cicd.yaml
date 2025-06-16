@@ -1,0 +1,47 @@
+pipeline:
+  orgIdentifier: stf
+  projectIdentifier: Mower
+  properties:
+    ci:
+      codebase:
+        connectorRef: org.gitstf
+        repoName: mower-java
+        build: <+input>
+        sparseCheckout: []
+  stages:
+    - stage:
+        name: Build and test
+        identifier: Build_and_test
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: org.kubdesktop
+              namespace: mower
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Test
+                  identifier: Test
+                  spec:
+                    connectorRef: Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      mvn test -B
+          caching:
+            enabled: false
+            paths: []
+          buildIntelligence:
+            enabled: false
+  identifier: mowerjava_cicd
+  tags: {}
+  name: mower-java - ci-cd
