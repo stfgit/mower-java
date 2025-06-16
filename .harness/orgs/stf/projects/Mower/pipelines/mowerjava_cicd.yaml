@@ -38,10 +38,10 @@ pipeline:
                       mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
                       mvn test -B
           caching:
-            enabled: false
+            enabled: true
             paths: []
           buildIntelligence:
-            enabled: false
+            enabled: true
   identifier: mowerjava_cicd
   tags: {}
   name: mower-java - ci-cd
