@@ -42,6 +42,123 @@ pipeline:
             paths: []
           buildIntelligence:
             enabled: true
+    - stage:
+        name: Deploy and execute job
+        identifier: Deploy_and_execute_job
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: mower_service
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  artifacts:
+                    primary:
+                      primaryArtifactRef: <+input>
+                      sources: <+input>
+          environment:
+            environmentRef: org.dev
+            gitBranch: main
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: mower_infra
+                inputs:
+                  identifier: mower_infra
+                  type: KubernetesDirect
+                  spec:
+                    provisioner: <+input>
+          execution:
+            steps:
+              - step:
+                  type: K8sDelete
+                  name: Cleanup Old Jobs
+                  identifier: Cleanup_Old_Jobs
+                  spec:
+                    deleteResources:
+                      type: ManifestPath
+                      spec:
+                        manifestPaths:
+                          - cleanup-job.yaml
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+              - step:
+                  type: K8sApply
+                  name: Deploy Job
+                  identifier: Deploy_Job
+                  spec:
+                    skipDryRun: false
+                    skipSteadyStateCheck: false
+                    skipRendering: false
+                    overrides: []
+                    filePaths:
+                      - job.yaml
+                      - configmap.yaml
+                  timeout: 10m
+              - step:
+                  type: ShellScript
+                  name: Wait for Job Completion
+                  identifier: Wait_for_Job_Completion
+                  spec:
+                    shell: Bash
+                    executionTarget: {}
+                    source:
+                      type: Inline
+                      spec:
+                        script: |-
+                          JOB_NAME="mower-java-<+pipeline.executionId>"
+                          NAMESPACE="<+infra.namespace>"
+                          TIMEOUT=600  # 10 minutes
+                                      
+                          echo "Waiting for job $JOB_NAME to complete..."
+                                      
+                          # Attendre que le job soit créé
+                          kubectl wait --for=condition=complete job/$JOB_NAME -n $NAMESPACE --timeout=${TIMEOUT}s
+                                      
+                          # Vérifier le statut final
+                          JOB_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.conditions[0].type}')
+                                      
+                          if [ "$JOB_STATUS" = "Complete" ]; then
+                            echo "✅ Job completed successfully!"
+                                        
+                            # Afficher les logs
+                            echo "📋 Job logs:"
+                            kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE
+                                        
+                            # Récupérer les métriques
+                            kubectl get job $JOB_NAME -n $NAMESPACE -o json | jq '.status'
+                                        
+                            exit 0
+                          else
+                            echo "❌ Job failed or timed out"
+                            echo "Job status: $JOB_STATUS"
+                                        
+                            # Afficher les logs d'erreur
+                            kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE --tail=50
+                                        
+                            # Détails du job
+                            kubectl describe job $JOB_NAME -n $NAMESPACE
+                                        
+                            exit 1
+                          fi
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 15m
+            rollbackSteps: []
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: MarkAsFailure
   identifier: mowerjava_cicd
   tags: {}
   name: mower-java - ci-cd
