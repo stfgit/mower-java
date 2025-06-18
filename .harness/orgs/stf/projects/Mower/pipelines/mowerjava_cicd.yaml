@@ -158,6 +158,7 @@ pipeline:
                           fi
                     environmentVariables: []
                     outputVariables: []
+                    includeInfraSelectors: true
                   timeout: 15m
             rollbackSteps: []
         tags: {}
