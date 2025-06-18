@@ -86,6 +86,20 @@ pipeline:
           execution:
             steps:
               - step:
+                  type: ShellScript
+                  name: ShellScript_2
+                  identifier: ShellScript_2
+                  spec:
+                    shell: Bash
+                    executionTarget: {}
+                    source:
+                      type: Inline
+                      spec:
+                        script: echo "<+infra.namespace> <+infra.releaseName>>"
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 10m
+              - step:
                   type: K8sDelete
                   name: Cleanup Old Jobs
                   identifier: Cleanup_Old_Jobs
