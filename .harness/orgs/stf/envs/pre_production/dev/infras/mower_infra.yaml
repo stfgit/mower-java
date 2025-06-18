@@ -9,5 +9,4 @@ infrastructureDefinition:
     connectorRef: org.kubdesktop
     namespace: mower
     releaseName: release-<+INFRA_KEY_SHORT_ID>
-    provisioner: <+input>
   allowSimultaneousDeployments: true
