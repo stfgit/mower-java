@@ -1,6 +1,6 @@
 # values.yaml
 namespace: <+infra.namespace>
-jobName: mower-java-<+pipeline.executionId>
+jobName: mower-java-<+pipeline.startTs>
 image: <+artifact.image>
 pipelineId: <+pipeline.executionId>
 environment: <+env.name>
