@@ -125,37 +125,44 @@ pipeline:
                           NAMESPACE="<+infra.namespace>"
                           TIMEOUT=600  # 10 minutes
                                       
-                          echo "Waiting for job $JOB_NAME to complete..."
-                                      
-                          # Attendre que le job soit créé
-                          kubectl wait --for=condition=complete job/$JOB_NAME -n $NAMESPACE --timeout=${TIMEOUT}s
-                                      
-                          # Vérifier le statut final
-                          JOB_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.conditions[0].type}')
-                                      
-                          if [ "$JOB_STATUS" = "Complete" ]; then
-                            echo "✅ Job completed successfully!"
+                          echo "Waiting for job $JOB_NAME to complete in namespace $NAMESPACE..."
                                         
-                            # Afficher les logs
-                            echo "📋 Job logs:"
-                            kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE
+                            # Attendre la completion
+                            kubectl wait --for=condition=complete job/$JOB_NAME -n $NAMESPACE --timeout=${TIMEOUT}s
+                            WAIT_RESULT=$?
                                         
-                            # Récupérer les métriques
-                            kubectl get job $JOB_NAME -n $NAMESPACE -o json | jq '.status'
+                            # Récupérer les informations du job
+                            SUCCESS_COUNT=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}' 2>/dev/null || echo "0")
+                            FAILED_COUNT=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}' 2>/dev/null || echo "0")
                                         
-                            exit 0
-                          else
-                            echo "❌ Job failed or timed out"
-                            echo "Job status: $JOB_STATUS"
+                            echo "📊 Job Results:"
+                            echo "   kubectl wait result: $WAIT_RESULT"
+                            echo "   Successful pods: $SUCCESS_COUNT"
+                            echo "   Failed pods: $FAILED_COUNT"
                                         
-                            # Afficher les logs d'erreur
-                            kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE --tail=50
-                                        
-                            # Détails du job
-                            kubectl describe job $JOB_NAME -n $NAMESPACE
-                                        
-                            exit 1
-                          fi
+                            if [ "$WAIT_RESULT" -eq 0 ] && [ "$SUCCESS_COUNT" -gt 0 ]; then
+                              echo "✅ Job completed successfully!"
+                              
+                              # Afficher les logs
+                              echo "📋 Application output:"
+                              kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE
+                              
+                              exit 0
+                            else
+                              echo "❌ Job did not complete successfully"
+                              
+                              # Logs de debug
+                              echo "🔍 All pods for this job:"
+                              kubectl get pods -l job-name=$JOB_NAME -n $NAMESPACE
+                              
+                              echo "🔍 Job logs:"
+                              kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE --tail=50
+                              
+                              echo "🔍 Job description:"
+                              kubectl describe job $JOB_NAME -n $NAMESPACE
+                              
+                              exit 1
+                            fi
                     environmentVariables: []
                     outputVariables: []
                     includeInfraSelectors: false
