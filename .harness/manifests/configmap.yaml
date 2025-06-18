@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mower-input-data
-  namespace: <+infra.namespace>
+  namespace: <+stage.spec.infrastructure.spec.namespace>
   labels:
     app: mower-java
 data:
