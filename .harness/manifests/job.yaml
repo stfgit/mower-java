@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: mower-java-<+pipeline.executionId>
-  namespace: <+stage.spec.infrastructure.spec.namespace>
+  namespace: mower
   labels:
     app: mower-java
     job-id: "<+pipeline.executionId>"

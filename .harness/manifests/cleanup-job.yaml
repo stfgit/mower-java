@@ -5,7 +5,7 @@ items:
   kind: Job
   metadata:
     name: mower-java-cleanup
-    namespace: <+infra.namespace>
+    namespace: mower
   spec:
     template:
       spec:
