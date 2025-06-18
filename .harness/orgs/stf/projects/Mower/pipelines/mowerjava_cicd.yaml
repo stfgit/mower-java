@@ -121,7 +121,7 @@ pipeline:
                       type: Inline
                       spec:
                         script: |-
-                          JOB_NAME="mower-java-<+pipeline.executionId>"
+                          JOB_NAME="mower-java-<+pipeline.startTs>"
                           NAMESPACE="<+infra.namespace>"
                           TIMEOUT=600  # 10 minutes
                                       
