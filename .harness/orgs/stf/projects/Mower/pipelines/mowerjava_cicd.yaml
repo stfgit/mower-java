@@ -168,6 +168,8 @@ pipeline:
                 - AllErrors
               action:
                 type: MarkAsFailure
+        delegateSelectors:
+          - helm-delegate
   identifier: mowerjava_cicd
   tags: {}
   name: mower-java - ci-cd
