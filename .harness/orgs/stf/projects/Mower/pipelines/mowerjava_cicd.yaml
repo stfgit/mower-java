@@ -95,9 +95,10 @@ pipeline:
                     source:
                       type: Inline
                       spec:
-                        script: echo "<+infra.namespace> <+infra.releaseName>>"
+                        script: echo "<+infra.namespace> <+infra.releaseName>"
                     environmentVariables: []
                     outputVariables: []
+                    includeInfraSelectors: false
                   timeout: 10m
               - step:
                   type: K8sDelete
