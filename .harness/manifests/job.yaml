@@ -1,72 +1,47 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: mower-java-<+pipeline.executionId>
-  namespace: mower
+  name: {{ .Values.jobName }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: mower-java
-    job-id: "<+pipeline.executionId>"
-    environment: <+env.name>
+    app: {{ .Values.app.name }}
+    job-id: "{{ .Values.pipelineId }}"
+    environment: {{ .Values.environment }}
 spec:
-  # Configuration du Job
-  completions: 1              # Nombre d'exécutions réussies attendues
-  parallelism: 1              # Nombre de pods en parallèle
-  backoffLimit: 3             # Nombre de tentatives en cas d'échec
-  activeDeadlineSeconds: 600  # Timeout global (10 minutes)
-  ttlSecondsAfterFinished: 300 # Nettoyage auto après 5 min
-  
+  completions: {{ .Values.job.completions }}
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
   template:
     metadata:
       labels:
-        app: mower-java
-        job-id: "<+pipeline.executionId>"
+        app: {{ .Values.app.name }}
+        job-id: "{{ .Values.pipelineId }}"
     spec:
-      restartPolicy: Never  # OBLIGATOIRE pour les Jobs
+      restartPolicy: Never
       containers:
-      - name: mower-java
-        image: <+artifact.image>
-        
-        # Configuration de l'exécution
+      - name: {{ .Values.app.name }}
+        image: {{ .Values.image }}
         command: ["java"]
-        args: [
-          "-Xmx256m",
-          "-Xms128m",
-          "-jar",
-          "/app/mower-java.jar"
-          # Ajoutez ici les arguments spécifiques à votre mower
-          # Par exemple : "--input-file", "/data/input.txt"
-        ]
-        
-        # Variables d'environnement
+        args: ["-jar", "mower-java.jar"]
         env:
         - name: JOB_ID
-          value: "<+pipeline.executionId>"
+          value: "{{ .Values.pipelineId }}"
         - name: ENVIRONMENT
-          value: <+env.name>
+          value: "{{ .Values.environment }}"
         - name: LOG_LEVEL
           value: "INFO"
-        
-        # Ressources (adaptées pour batch)
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: {{ .Values.app.resources.requests.memory }}
+            cpu: {{ .Values.app.resources.requests.cpu }}
           limits:
-            memory: "512Mi"
-            cpu: "500m"
-        
-        # Montage de volumes si nécessaire
+            memory: {{ .Values.app.resources.limits.memory }}
+            cpu: {{ .Values.app.resources.limits.cpu }}
         volumeMounts:
         - name: input-data
           mountPath: /data
           readOnly: true
-        - name: output-data
-          mountPath: /output
-      
-      # Volumes pour données d'entrée/sortie
       volumes:
       - name: input-data
         configMap:
           name: mower-input-data
-      - name: output-data
-        emptyDir: {}

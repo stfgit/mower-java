@@ -2,20 +2,16 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mower-input-data
-  namespace: mower
+  namespace: {{ .Values.namespace }}
   labels:
-    app: mower-java
+    app: {{ .Values.app.name }}
 data:
-  # Fichier d'instructions pour le mower
   instructions.txt: |
     5 5
     1 2 N
     GAGAGAGAA
     3 3 E
     AADAADADDA
-  
-  # Configuration applicative
   application.properties: |
-    output.format=json
-    verbose=true
-    validate.input=true
+    environment={{ .Values.environment }}
+    job.id={{ .Values.pipelineId }}
