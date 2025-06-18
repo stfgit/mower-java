@@ -55,6 +55,8 @@ pipeline:
             paths: []
           buildIntelligence:
             enabled: true
+        when:
+          pipelineStatus: Success
     - stage:
         name: Deploy and execute job
         identifier: Deploy_and_execute_job
