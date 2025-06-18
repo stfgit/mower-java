@@ -122,7 +122,7 @@ pipeline:
                       spec:
                         script: |-
                           JOB_NAME="mower-java-<+pipeline.executionId>"
-                          NAMESPACE="<+infra.namespace>"
+                          NAMESPACE="<+stage.spec.infrastructure.spec.namespace>"
                           TIMEOUT=600  # 10 minutes
                                       
                           echo "Waiting for job $JOB_NAME to complete..."
