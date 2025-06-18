@@ -1,0 +1,40 @@
+inputSet:
+  pipeline:
+    identifier: mowerjava_cicd
+    properties:
+      ci:
+        codebase:
+          build:
+            spec:
+              branch: main
+            type: branch
+    stages:
+      - stage:
+          identifier: Deploy_and_execute_job
+          type: Deployment
+          spec:
+            service:
+              serviceInputs:
+                serviceDefinition:
+                  type: Kubernetes
+                  spec:
+                    artifacts:
+                      primary:
+                        primaryArtifactRef: java_mower_image
+                        sources:
+                          - identifier: java_mower_image
+                            type: DockerRegistry
+                            spec:
+                              tag: latest
+            environment:
+              infrastructureDefinitions:
+                - identifier: mower_infra
+                  inputs:
+                    identifier: mower_infra
+                    type: KubernetesDirect
+                    spec:
+                      provisioner: ""
+  name: pipe_input
+  identifier: pipe_input
+  orgIdentifier: stf
+  projectIdentifier: Mower
