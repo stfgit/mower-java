@@ -10,8 +10,8 @@ pipeline:
         sparseCheckout: []
   stages:
     - stage:
-        name: Build and test
-        identifier: Build_and_test
+        name: Maven Build
+        identifier: Maven_Build
         description: ""
         type: CI
         spec:
@@ -28,15 +28,42 @@ pipeline:
             steps:
               - step:
                   type: Run
-                  name: Test
-                  identifier: Test
+                  name: Maven Build
+                  identifier: Maven_Build
                   spec:
                     connectorRef: Dockerhub
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
+                      echo "🔨 Starting Maven build..."
                       mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      echo "✅ Maven build completed successfully"
+
+                      # Afficher les artefacts créés
+                      echo "📦 Generated artifacts:"
+                      ls -la target/*.jar 2>/dev/null || echo "No JAR files found"
+              - step:
+                  type: Run
+                  name: Maven Test
+                  identifier: Maven_Test
+                  spec:
+                    connectorRef: Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      echo "🧪 Starting Maven tests..."
                       mvn test -B
+                      echo "✅ Tests completed successfully"
+
+                      # Afficher un résumé des tests
+                      echo "📊 Test summary:"
+                      find target/surefire-reports -name "*.xml" -exec echo "Found test report: {}" \; 2>/dev/null || echo "No test reports found"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: MarkAsFailure
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
