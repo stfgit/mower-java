@@ -58,6 +58,11 @@ pipeline:
                       # Afficher un résumé des tests
                       echo "📊 Test summary:"
                       find target/surefire-reports -name "*.xml" -exec echo "Found test report: {}" \; 2>/dev/null || echo "No test reports found"
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - target/surefire-reports/*.xml
                   failureStrategies:
                     - onFailure:
                         errors:
