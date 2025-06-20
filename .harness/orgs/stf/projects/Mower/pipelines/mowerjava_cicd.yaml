@@ -110,7 +110,8 @@ pipeline:
                     stageStatus: Success
           caching:
             enabled: true
-            paths: []
+            paths:
+              - /root/.m2
           buildIntelligence:
             enabled: true
     - stage:
