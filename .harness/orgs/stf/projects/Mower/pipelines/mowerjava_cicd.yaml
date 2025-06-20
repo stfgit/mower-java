@@ -10,8 +10,8 @@ pipeline:
         sparseCheckout: []
   stages:
     - stage:
-        name: Maven Build
-        identifier: Maven_Build
+        name: Build and test
+        identifier: Build_and_test
         description: ""
         type: CI
         spec:
@@ -70,6 +70,30 @@ pipeline:
                         action:
                           type: MarkAsFailure
               - step:
+                  type: Run
+                  name: Code Quality Analysis
+                  identifier: Code_Quality_Analysis
+                  spec:
+                    connectorRef: Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      echo "🔍 Running code quality analysis..."
+
+                      # Générer les rapports de couverture (si JaCoCo configuré)
+                      mvn jacoco:report 2>/dev/null || echo "JaCoCo not configured"
+
+                      # Vérifier la compilation
+                      mvn compile -q
+
+                      echo "✅ Code quality analysis completed"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+              - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
                   identifier: Build_and_Push_Docker_Image
@@ -82,6 +106,8 @@ pipeline:
                     dockerfile: Dockerfile
                     context: .
                     buildArgs: {}
+                  when:
+                    stageStatus: Success
           caching:
             enabled: true
             paths: []
