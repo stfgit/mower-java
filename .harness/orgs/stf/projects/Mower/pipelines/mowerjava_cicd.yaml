@@ -71,8 +71,8 @@ pipeline:
                           type: MarkAsFailure
               - step:
                   type: Run
-                  name: Code Quality Analysis
-                  identifier: Code_Quality_Analysis
+                  name: Code Coverage Analysis
+                  identifier: Code_Coverage_Analysis
                   spec:
                     connectorRef: Dockerhub
                     image: maven:3.9.6-eclipse-temurin-21
@@ -80,83 +80,22 @@ pipeline:
                     command: |-
                       echo "🔍 Running code quality analysis..."
 
-                      # Générer le rapport JaCoCo
-                      echo "📊 Generating JaCoCo coverage report..."
+                      # Générer JaCoCo
                       mvn jacoco:report
 
-                      # Vérifier que le rapport a été généré
                       if [ -d "target/site/jacoco" ]; then
-                        echo "✅ JaCoCo report generated successfully"
+                        echo "✅ JaCoCo reports generated"
                         
-                        # Afficher un résumé dans les logs
-                        echo "📈 Coverage Summary:"
-                        if [ -f "target/site/jacoco/jacoco.csv" ]; then
-                          echo "Coverage data found - preparing for upload"
-                          
-                          # Calculer et afficher le pourcentage de couverture
-                          LINE_MISSED=$(awk -F',' 'NR==2 {print $8}' target/site/jacoco/jacoco.csv || echo "0")
-                          LINE_COVERED=$(awk -F',' 'NR==2 {print $9}' target/site/jacoco/jacoco.csv || echo "0")
-                          LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
-                          
-                          if [ "$LINE_TOTAL" -gt 0 ]; then
-                            LINE_PERCENT=$(echo "scale=1; $LINE_COVERED * 100 / $LINE_TOTAL" | bc -l 2>/dev/null || echo "0")
-                            echo "📊 Line Coverage: ${LINE_PERCENT}% ($LINE_COVERED/$LINE_TOTAL lines)"
-                          fi
-                        fi
+                        # Créer l'artefact avec un nom simple
+                        mkdir -p coverage-reports
+                        cp -r target/site/jacoco/* coverage-reports/
                         
-                        # Créer un dossier pour les artefacts Harness
-                        mkdir -p /harness/jacoco-reports
-                        
-                        # Copier tous les rapports JaCoCo
-                        cp -r target/site/jacoco/* /harness/jacoco-reports/
-                        
-                        # Créer un fichier de résumé pour Harness
-                        echo "JaCoCo Code Coverage Report" > /harness/jacoco-reports/README.txt
-                        echo "============================" >> /harness/jacoco-reports/README.txt
-                        echo "Generated on: $(date)" >> /harness/jacoco-reports/README.txt
-                        echo "" >> /harness/jacoco-reports/README.txt
-                        echo "Files included:" >> /harness/jacoco-reports/README.txt
-                        echo "- index.html : Main coverage report (open this in browser)" >> /harness/jacoco-reports/README.txt
-                        echo "- jacoco.xml : XML format for CI tools" >> /harness/jacoco-reports/README.txt
-                        echo "- jacoco.csv : CSV format for analysis" >> /harness/jacoco-reports/README.txt
-                        echo "" >> /harness/jacoco-reports/README.txt
-                        
-                        if [ -f "target/site/jacoco/jacoco.csv" ]; then
-                          echo "Coverage Summary:" >> /harness/jacoco-reports/README.txt
-                          head -n 2 target/site/jacoco/jacoco.csv >> /harness/jacoco-reports/README.txt
-                        fi
-                        
-                        echo "📁 JaCoCo reports prepared for Harness artifacts"
-                        ls -la /harness/jacoco-reports/
-                        
-                      else
-                        echo "⚠️ JaCoCo report directory not found"
-                        echo "Checking Maven output..."
-                        mvn jacoco:help -Ddetail=true
+                        echo "📁 Files ready for upload:"
+                        ls -la coverage-reports/
                       fi
 
-                      # Vérifier la compilation
                       mvn compile -q
-
-                      echo "✅ Code quality analysis completed"
-                    outputVariables:
-                      - name: JACOCO_COVERAGE_PERCENT
-                        type: String
-                        value: <+step.Code_Quality_Analysis.output.outputVariables.LINE_PERCENT>
-                    artifacts:
-                      - identifier: jacoco_reports
-                        type: GenericArtifact
-                        spec:
-                          source: /harness/jacoco-reports
-                          metadata:
-                            type: JaCoCo Coverage Reports
-                            description: Code coverage reports generated by JaCoCo
-                  failureStrategies:
-                    - onFailure:
-                        errors:
-                          - AllErrors
-                        action:
-                          type: Ignore
+                      echo "✅ Analysis completed"
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
@@ -178,6 +117,11 @@ pipeline:
               - /root/.m2
           buildIntelligence:
             enabled: true
+          artifacts:
+            - identifier: jacoco_reports
+              spec:
+                source: coverage-reports
+                type: Directory
     - stage:
         name: Deploy and execute job
         identifier: Deploy_and_execute_job
