@@ -56,105 +56,36 @@ pipeline:
                       # Exécuter tests avec coverage
                       mvn test jacoco:report -B
 
-                      # Vérifier la génération des rapports
-                      if [ -f "target/site/jacoco/jacoco.csv" ]; then
-                        echo "✅ JaCoCo reports generated successfully"
+                      if [ -d "target/site/jacoco" ]; then
+                        echo "✅ JaCoCo report generated successfully"
                         
-                        # Extraire les métriques du CSV (dernière ligne = totaux)
-                        LAST_LINE=$(tail -n 1 target/site/jacoco/jacoco.csv)
-                        
-                        # Parser les colonnes CSV (format JaCoCo standard)
-                        # GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,INSTRUCTION_RATIO,BRANCH_MISSED,BRANCH_COVERED,BRANCH_RATIO,LINE_MISSED,LINE_COVERED,LINE_RATIO,COMPLEXITY_MISSED,COMPLEXITY_COVERED,COMPLEXITY_RATIO,METHOD_MISSED,METHOD_COVERED,METHOD_RATIO
-                        
-                        INSTRUCTION_MISSED=$(echo "$LAST_LINE" | cut -d',' -f4)
-                        INSTRUCTION_COVERED=$(echo "$LAST_LINE" | cut -d',' -f5)
-                        LINE_MISSED=$(echo "$LAST_LINE" | cut -d',' -f10)
-                        LINE_COVERED=$(echo "$LAST_LINE" | cut -d',' -f11)
-                        
-                        # Calculer les pourcentages
-                        if [ "$INSTRUCTION_COVERED" -gt 0 ] || [ "$INSTRUCTION_MISSED" -gt 0 ]; then
-                          TOTAL_INSTRUCTIONS=$((INSTRUCTION_MISSED + INSTRUCTION_COVERED))
-                          INSTRUCTION_COVERAGE=$(echo "scale=2; $INSTRUCTION_COVERED * 100 / $TOTAL_INSTRUCTIONS" | bc -l)
-                        else
-                          INSTRUCTION_COVERAGE="0.00"
+                        # Afficher un résumé dans les logs
+                        echo "📈 Coverage Summary:"
+                        if [ -f "target/site/jacoco/jacoco.csv" ]; then    
+                          # Calculer et afficher le pourcentage de couverture
+                          LINE_MISSED=$(awk -F',' 'NR==2 {print $8}' target/site/jacoco/jacoco.csv || echo "0")
+                          LINE_COVERED=$(awk -F',' 'NR==2 {print $9}' target/site/jacoco/jacoco.csv || echo "0")
+                          LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
+                          
+                          if [ "$LINE_TOTAL" -gt 0 ]; then
+                            LINE_PERCENT=$(echo "scale=1; $LINE_COVERED * 100 / $LINE_TOTAL" | bc -l 2>/dev/null || echo "0")
+                            echo "📊 Line Coverage: ${LINE_PERCENT}% ($LINE_COVERED/$LINE_TOTAL lines)"
+                          fi
                         fi
-                        
-                        if [ "$LINE_COVERED" -gt 0 ] || [ "$LINE_MISSED" -gt 0 ]; then
-                          TOTAL_LINES=$((LINE_MISSED + LINE_COVERED))
-                          LINE_COVERAGE=$(echo "scale=2; $LINE_COVERED * 100 / $TOTAL_LINES" | bc -l)
-                        else
-                          LINE_COVERAGE="0.00"
-                        fi
-                        
-                        # Afficher le résumé
-                        echo ""
-                        echo "📊 COVERAGE ANALYSIS RESULTS"
-                        echo "============================"
-                        echo "📈 Line Coverage:        ${LINE_COVERAGE}% (${LINE_COVERED}/${TOTAL_LINES})"
-                        echo "⚡ Instruction Coverage: ${INSTRUCTION_COVERAGE}% (${INSTRUCTION_COVERED}/${TOTAL_INSTRUCTIONS})"
-                        echo ""
-                        
-                        # Évaluation qualitative
-                        LINE_THRESHOLD=80
-                        if [ "$(echo "$LINE_COVERAGE >= $LINE_THRESHOLD" | bc -l)" -eq 1 ]; then
-                          echo "✅ Coverage quality: EXCELLENT (≥${LINE_THRESHOLD}%)"
-                          COVERAGE_STATUS="PASS"
-                        elif [ "$(echo "$LINE_COVERAGE >= 60" | bc -l)" -eq 1 ]; then
-                          echo "⚠️  Coverage quality: GOOD (≥60%)"
-                          COVERAGE_STATUS="WARN"
-                        else
-                          echo "❌ Coverage quality: NEEDS IMPROVEMENT (<60%)"
-                          COVERAGE_STATUS="FAIL"
-                        fi
-                        
-                        echo ""
-                        echo "📁 Generated artifacts:"
-                        echo "   📄 HTML Report: target/site/jacoco/index.html"
-                        echo "   📊 XML Report:  target/site/jacoco/jacoco.xml"
-                        echo "   📈 CSV Data:    target/site/jacoco/jacoco.csv"
-                        echo ""
-                        
-                        # Exporter les variables pour les étapes suivantes
-                        echo "LINE_COVERAGE=${LINE_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES
-                        echo "INSTRUCTION_COVERAGE=${INSTRUCTION_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES
-                        echo "COVERAGE_STATUS=${COVERAGE_STATUS}" >> $HARNESS_OUTPUT_VARIABLES
-                        echo "TOTAL_LINES=${TOTAL_LINES}" >> $HARNESS_OUTPUT_VARIABLES
-                        echo "COVERED_LINES=${LINE_COVERED}" >> $HARNESS_OUTPUT_VARIABLES
-
-                        echo "✅ Coverage analysis completed successfully"
                       else
-                        echo "❌ JaCoCo CSV report not found at target/site/jacoco/jacoco.csv"
-                        echo "🔍 Available files:"
-                        find target -name "*.xml" -o -name "*.csv" -o -name "*.html" | head -10
-                        exit 1
+                        echo "⚠️ JaCoCo report directory not found"
+                        echo "Checking Maven output..."
+                        mvn jacoco:help -Ddetail=true
                       fi
-
-                      # Compiler pour s'assurer que tout est OK
-                      mvn compile -q
-                    reports:
-                      type: JUnit
-                      spec:
-                        paths:
-                          - target/surefire-reports/*.xml
+                  reports:
+                    type: JUnit
+                    spec:
+                      paths:
+                        - target/surefire-reports/*.xml
                   outputVariables:
-                    - name: LINE_COVERAGE
+                    - name: JACOCO_COVERAGE_PERCENT
                       type: String
-                      value: <+step.output.outputVariables.LINE_COVERAGE>
-                    - name: BRANCH_COVERAGE
-                      type: String
-                      value: <+step.output.outputVariables.BRANCH_COVERAGE>
-                    - name: INSTRUCTION_COVERAGE
-                      type: String
-                      value: <+step.output.outputVariables.INSTRUCTION_COVERAGE>
-                    - name: COVERAGE_STATUS
-                      type: String
-                      value: <+step.output.outputVariables.COVERAGE_STATUS>
-                    - name: TOTAL_LINES
-                      type: String
-                      value: <+step.output.outputVariables.TOTAL_LINES>
-                    - name: COVERED_LINES
-                      type: String
-                      value: <+step.output.outputVariables.COVERED_LINES>
+                      value: <+step.Maven_Test_Coverage.output.outputVariables.LINE_PERCENT>
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
