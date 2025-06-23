@@ -56,36 +56,116 @@ pipeline:
                       # Exécuter tests avec coverage
                       mvn test jacoco:report -B
 
-                      # Extraire les métriques de coverage
+                      # Vérifier la génération des rapports
                       if [ -f "target/site/jacoco/jacoco.csv" ]; then
-                        # Extraire les métriques principales du CSV
-                        LINE_COVERAGE=$(awk -F',' 'END {print $8}' target/site/jacoco/jacoco.csv)
-                        BRANCH_COVERAGE=$(awk -F',' 'END {print $10}' target/site/jacoco/jacoco.csv)
-                        INSTRUCTION_COVERAGE=$(awk -F',' 'END {print $4}' target/site/jacoco/jacoco.csv)
+                        echo "✅ JaCoCo reports generated successfully"
                         
-                        echo "📊 Coverage Summary:"
-                        echo "   Lines: ${LINE_COVERAGE}%"
-                        echo "   Branches: ${BRANCH_COVERAGE}%"
-                        echo "   Instructions: ${INSTRUCTION_COVERAGE}%"
+                        # Extraire les métriques du CSV (dernière ligne = totaux)
+                        LAST_LINE=$(tail -n 1 target/site/jacoco/jacoco.csv)
+                        
+                        # Parser les colonnes CSV (format JaCoCo standard)
+                        # GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,INSTRUCTION_RATIO,BRANCH_MISSED,BRANCH_COVERED,BRANCH_RATIO,LINE_MISSED,LINE_COVERED,LINE_RATIO,COMPLEXITY_MISSED,COMPLEXITY_COVERED,COMPLEXITY_RATIO,METHOD_MISSED,METHOD_COVERED,METHOD_RATIO
+                        
+                        INSTRUCTION_MISSED=$(echo "$LAST_LINE" | cut -d',' -f4)
+                        INSTRUCTION_COVERED=$(echo "$LAST_LINE" | cut -d',' -f5)
+                        BRANCH_MISSED=$(echo "$LAST_LINE" | cut -d',' -f7)
+                        BRANCH_COVERED=$(echo "$LAST_LINE" | cut -d',' -f8)
+                        LINE_MISSED=$(echo "$LAST_LINE" | cut -d',' -f10)
+                        LINE_COVERED=$(echo "$LAST_LINE" | cut -d',' -f11)
+                        
+                        # Calculer les pourcentages
+                        if [ "$INSTRUCTION_COVERED" -gt 0 ] || [ "$INSTRUCTION_MISSED" -gt 0 ]; then
+                          TOTAL_INSTRUCTIONS=$((INSTRUCTION_MISSED + INSTRUCTION_COVERED))
+                          INSTRUCTION_COVERAGE=$(echo "scale=2; $INSTRUCTION_COVERED * 100 / $TOTAL_INSTRUCTIONS" | bc -l)
+                        else
+                          INSTRUCTION_COVERAGE="0.00"
+                        fi
+                        
+                        if [ "$BRANCH_COVERED" -gt 0 ] || [ "$BRANCH_MISSED" -gt 0 ]; then
+                          TOTAL_BRANCHES=$((BRANCH_MISSED + BRANCH_COVERED))
+                          BRANCH_COVERAGE=$(echo "scale=2; $BRANCH_COVERED * 100 / $TOTAL_BRANCHES" | bc -l)
+                        else
+                          BRANCH_COVERAGE="0.00"
+                        fi
+                        
+                        if [ "$LINE_COVERED" -gt 0 ] || [ "$LINE_MISSED" -gt 0 ]; then
+                          TOTAL_LINES=$((LINE_MISSED + LINE_COVERED))
+                          LINE_COVERAGE=$(echo "scale=2; $LINE_COVERED * 100 / $TOTAL_LINES" | bc -l)
+                        else
+                          LINE_COVERAGE="0.00"
+                        fi
+                        
+                        # Afficher le résumé
+                        echo ""
+                        echo "📊 COVERAGE ANALYSIS RESULTS"
+                        echo "============================"
+                        echo "📈 Line Coverage:        ${LINE_COVERAGE}% (${LINE_COVERED}/${TOTAL_LINES})"
+                        echo "🌿 Branch Coverage:      ${BRANCH_COVERAGE}% (${BRANCH_COVERED}/${TOTAL_BRANCHES})"
+                        echo "⚡ Instruction Coverage: ${INSTRUCTION_COVERAGE}% (${INSTRUCTION_COVERED}/${TOTAL_INSTRUCTIONS})"
+                        echo ""
+                        
+                        # Évaluation qualitative
+                        LINE_THRESHOLD=80
+                        if [ "$(echo "$LINE_COVERAGE >= $LINE_THRESHOLD" | bc -l)" -eq 1 ]; then
+                          echo "✅ Coverage quality: EXCELLENT (≥${LINE_THRESHOLD}%)"
+                          COVERAGE_STATUS="PASS"
+                        elif [ "$(echo "$LINE_COVERAGE >= 60" | bc -l)" -eq 1 ]; then
+                          echo "⚠️  Coverage quality: GOOD (≥60%)"
+                          COVERAGE_STATUS="WARN"
+                        else
+                          echo "❌ Coverage quality: NEEDS IMPROVEMENT (<60%)"
+                          COVERAGE_STATUS="FAIL"
+                        fi
+                        
+                        echo ""
+                        echo "📁 Generated artifacts:"
+                        echo "   📄 HTML Report: target/site/jacoco/index.html"
+                        echo "   📊 XML Report:  target/site/jacoco/jacoco.xml"
+                        echo "   📈 CSV Data:    target/site/jacoco/jacoco.csv"
+                        echo ""
+                        
+                        # Exporter les variables pour les étapes suivantes
+                        echo "LINE_COVERAGE=${LINE_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES
+                        echo "BRANCH_COVERAGE=${BRANCH_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES  
+                        echo "INSTRUCTION_COVERAGE=${INSTRUCTION_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES
+                        echo "COVERAGE_STATUS=${COVERAGE_STATUS}" >> $HARNESS_OUTPUT_VARIABLES
+                        echo "TOTAL_LINES=${TOTAL_LINES}" >> $HARNESS_OUTPUT_VARIABLES
+                        echo "COVERED_LINES=${LINE_COVERED}" >> $HARNESS_OUTPUT_VARIABLES
+
+                        echo "✅ Coverage analysis completed successfully"
                       else
-                        echo "❌ JaCoCo report not found"
+                        echo "❌ JaCoCo CSV report not found at target/site/jacoco/jacoco.csv"
+                        echo "🔍 Available files:"
+                        find target -name "*.xml" -o -name "*.csv" -o -name "*.html" | head -10
                         exit 1
                       fi
+
+                      # Compiler pour s'assurer que tout est OK
+                      mvn compile -q
                     reports:
                       type: JUnit
                       spec:
                         paths:
                           - target/surefire-reports/*.xml
-                    outputVariables:
-                      - name: LINE_COVERAGE
-                        type: String
-                        value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.LINE_COVERAGE>
-                      - name: BRANCH_COVERAGE
-                        type: String
-                        value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.BRANCH_COVERAGE>
-                      - name: INSTRUCTION_COVERAGE
-                        type: String
-                        value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.INSTRUCTION_COVERAGE>
+                  outputVariables:
+                    - name: LINE_COVERAGE
+                      type: String
+                      value: <+step.output.outputVariables.LINE_COVERAGE>
+                    - name: BRANCH_COVERAGE
+                      type: String
+                      value: <+step.output.outputVariables.BRANCH_COVERAGE>
+                    - name: INSTRUCTION_COVERAGE
+                      type: String
+                      value: <+step.output.outputVariables.INSTRUCTION_COVERAGE>
+                    - name: COVERAGE_STATUS
+                      type: String
+                      value: <+step.output.outputVariables.COVERAGE_STATUS>
+                    - name: TOTAL_LINES
+                      type: String
+                      value: <+step.output.outputVariables.TOTAL_LINES>
+                    - name: COVERED_LINES
+                      type: String
+                      value: <+step.output.outputVariables.COVERED_LINES>
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
