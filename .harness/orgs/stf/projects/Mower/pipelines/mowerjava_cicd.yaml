@@ -44,62 +44,75 @@ pipeline:
                       ls -la target/*.jar 2>/dev/null || echo "No JAR files found"
               - step:
                   type: Run
-                  name: Maven Test
-                  identifier: Maven_Test
+                  name: Maven Test with Coverage
+                  identifier: Maven_Test_Coverage
                   spec:
                     connectorRef: Dockerhub
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
-                      echo "🧪 Starting Maven tests..."
-                      mvn test -B
-                      echo "✅ Tests completed successfully"
+                      echo "🧪 Running tests with JaCoCo coverage..."
 
-                      # Afficher un résumé des tests
-                      echo "📊 Test summary:"
-                      find target/surefire-reports -name "*.xml" -exec echo "Found test report: {}" \; 2>/dev/null || echo "No test reports found"
-                    reports:
-                      type: JUnit
-                      spec:
-                        paths:
-                          - target/surefire-reports/*.xml
-                  failureStrategies:
-                    - onFailure:
-                        errors:
-                          - AllErrors
-                        action:
-                          type: MarkAsFailure
-              - step:
-                  type: Run
-                  name: Code Coverage Analysis
-                  identifier: Code_Coverage_Analysis
-                  spec:
-                    connectorRef: Dockerhub
-                    image: maven:3.9.6-eclipse-temurin-21
-                    shell: Sh
-                    command: |-
-                      echo "🔍 Running code quality analysis..."
+                      # Exécuter tests avec coverage
+                      mvn test jacoco:report -B
 
-                      # Générer JaCoCo
-                      mvn jacoco:report
-
-                      if [ -d "target/site/jacoco" ]; then
-                        echo "✅ JaCoCo reports generated"
+                      # Extraire les métriques de coverage
+                      if [ -f "target/site/jacoco/jacoco.csv" ]; then
+                        # Extraire les métriques principales du CSV
+                        LINE_COVERAGE=$(awk -F',' 'END {print $8}' target/site/jacoco/jacoco.csv)
+                        BRANCH_COVERAGE=$(awk -F',' 'END {print $10}' target/site/jacoco/jacoco.csv)
+                        INSTRUCTION_COVERAGE=$(awk -F',' 'END {print $4}' target/site/jacoco/jacoco.csv)
                         
-                        # Créer l'artefact avec un nom simple
-                        mkdir -p coverage-reports
-                        cp -r target/site/jacoco/* coverage-reports/
+                        echo "📊 Coverage Summary:"
+                        echo "   Lines: ${LINE_COVERAGE}%"
+                        echo "   Branches: ${BRANCH_COVERAGE}%"
+                        echo "   Instructions: ${INSTRUCTION_COVERAGE}%"
                         
-                        echo "📁 Files ready for upload:"
-                        ls -la coverage-reports/
-                      fi
+                        # Afficher un résumé détaillé des fichiers
+                        echo "📋 Detailed Coverage Report:"
+                        echo "=========================="
+                        find target/site/jacoco -name "*.html" -not -name "index.html" -exec basename {} .html \; | head -10
+                        
+                        # Créer un résumé en markdown
+                        cat > coverage-summary.md << EOF
+                        # Code Coverage Report
 
-                      mvn compile -q
-                      echo "✅ Analysis completed"
-                    outputVariables:
-                      - name: JACOCO_COVERAGE_PERCENT
-                        type: String
-                        value: <+step.Code_Quality_Analysis.output.outputVariables.LINE_PERCENT>
+                        ## 📊 Overall Metrics
+                        - **Line Coverage**: ${LINE_COVERAGE}%
+                        - **Branch Coverage**: ${BRANCH_COVERAGE}%  
+                        - **Instruction Coverage**: ${INSTRUCTION_COVERAGE}%
+
+                        ## 📁 Report Files Generated
+                        - HTML Report: \`target/site/jacoco/index.html\`
+                        - XML Report: \`target/site/jacoco/jacoco.xml\`
+                        - CSV Report: \`target/site/jacoco/jacoco.csv\`
+
+                        ## 🎯 Coverage Status
+                        $(if [ "${LINE_COVERAGE}" -gt 80 ]; then echo "✅ Coverage threshold met"; else echo "❌ Coverage below 80%"; fi)
+                        EOF
+                                  
+                                  echo "📄 Coverage summary written to coverage-summary.md"
+                                  cat coverage-summary.md
+                                  
+                                else
+                                  echo "❌ JaCoCo report not found"
+                                  exit 1
+                                fi
+                              reports:
+                                type: JUnit
+                                spec:
+                                  paths:
+                                    - target/surefire-reports/*.xml
+                            outputVariables:
+                              - name: LINE_COVERAGE
+                                type: String
+                                value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.LINE_COVERAGE>
+                              - name: BRANCH_COVERAGE
+                                type: String
+                                value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.BRANCH_COVERAGE>
+                              - name: INSTRUCTION_COVERAGE
+                                type: String
+                                value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.INSTRUCTION_COVERAGE>
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
