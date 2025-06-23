@@ -92,27 +92,26 @@ pipeline:
                         EOF
                                   
                                   echo "📄 Coverage summary written to coverage-summary.md"
-                                  cat coverage-summary.md
-                                  
-                                else
-                                  echo "❌ JaCoCo report not found"
-                                  exit 1
-                                fi
-                              reports:
-                                type: JUnit
-                                spec:
-                                  paths:
-                                    - target/surefire-reports/*.xml
-                            outputVariables:
-                              - name: LINE_COVERAGE
-                                type: String
-                                value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.LINE_COVERAGE>
-                              - name: BRANCH_COVERAGE
-                                type: String
-                                value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.BRANCH_COVERAGE>
-                              - name: INSTRUCTION_COVERAGE
-                                type: String
-                                value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.INSTRUCTION_COVERAGE>
+                                  cat coverage-summary.md     
+                      else
+                        echo "❌ JaCoCo report not found"
+                        exit 1
+                      fi
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - target/surefire-reports/*.xml
+                  outputVariables:
+                    - name: LINE_COVERAGE
+                      type: String
+                      value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.LINE_COVERAGE>
+                    - name: BRANCH_COVERAGE
+                      type: String
+                      value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.BRANCH_COVERAGE>
+                    - name: INSTRUCTION_COVERAGE
+                      type: String
+                      value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.INSTRUCTION_COVERAGE>
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
