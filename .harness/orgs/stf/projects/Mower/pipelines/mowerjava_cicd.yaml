@@ -96,6 +96,10 @@ pipeline:
 
                       mvn compile -q
                       echo "✅ Analysis completed"
+                    outputVariables:
+                      - name: JACOCO_COVERAGE_PERCENT
+                        type: String
+                        value: <+step.Code_Quality_Analysis.output.outputVariables.LINE_PERCENT>
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
@@ -117,11 +121,6 @@ pipeline:
               - /root/.m2
           buildIntelligence:
             enabled: true
-          artifacts:
-            - identifier: jacoco_reports
-              spec:
-                source: coverage-reports
-                type: Directory
     - stage:
         name: Deploy and execute job
         identifier: Deploy_and_execute_job
