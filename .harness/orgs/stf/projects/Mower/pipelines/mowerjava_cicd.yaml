@@ -68,8 +68,6 @@ pipeline:
                         
                         INSTRUCTION_MISSED=$(echo "$LAST_LINE" | cut -d',' -f4)
                         INSTRUCTION_COVERED=$(echo "$LAST_LINE" | cut -d',' -f5)
-                        BRANCH_MISSED=$(echo "$LAST_LINE" | cut -d',' -f7)
-                        BRANCH_COVERED=$(echo "$LAST_LINE" | cut -d',' -f8)
                         LINE_MISSED=$(echo "$LAST_LINE" | cut -d',' -f10)
                         LINE_COVERED=$(echo "$LAST_LINE" | cut -d',' -f11)
                         
@@ -79,13 +77,6 @@ pipeline:
                           INSTRUCTION_COVERAGE=$(echo "scale=2; $INSTRUCTION_COVERED * 100 / $TOTAL_INSTRUCTIONS" | bc -l)
                         else
                           INSTRUCTION_COVERAGE="0.00"
-                        fi
-                        
-                        if [ "$BRANCH_COVERED" -gt 0 ] || [ "$BRANCH_MISSED" -gt 0 ]; then
-                          TOTAL_BRANCHES=$((BRANCH_MISSED + BRANCH_COVERED))
-                          BRANCH_COVERAGE=$(echo "scale=2; $BRANCH_COVERED * 100 / $TOTAL_BRANCHES" | bc -l)
-                        else
-                          BRANCH_COVERAGE="0.00"
                         fi
                         
                         if [ "$LINE_COVERED" -gt 0 ] || [ "$LINE_MISSED" -gt 0 ]; then
@@ -100,7 +91,6 @@ pipeline:
                         echo "📊 COVERAGE ANALYSIS RESULTS"
                         echo "============================"
                         echo "📈 Line Coverage:        ${LINE_COVERAGE}% (${LINE_COVERED}/${TOTAL_LINES})"
-                        echo "🌿 Branch Coverage:      ${BRANCH_COVERAGE}% (${BRANCH_COVERED}/${TOTAL_BRANCHES})"
                         echo "⚡ Instruction Coverage: ${INSTRUCTION_COVERAGE}% (${INSTRUCTION_COVERED}/${TOTAL_INSTRUCTIONS})"
                         echo ""
                         
@@ -126,7 +116,6 @@ pipeline:
                         
                         # Exporter les variables pour les étapes suivantes
                         echo "LINE_COVERAGE=${LINE_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES
-                        echo "BRANCH_COVERAGE=${BRANCH_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES  
                         echo "INSTRUCTION_COVERAGE=${INSTRUCTION_COVERAGE}" >> $HARNESS_OUTPUT_VARIABLES
                         echo "COVERAGE_STATUS=${COVERAGE_STATUS}" >> $HARNESS_OUTPUT_VARIABLES
                         echo "TOTAL_LINES=${TOTAL_LINES}" >> $HARNESS_OUTPUT_VARIABLES
