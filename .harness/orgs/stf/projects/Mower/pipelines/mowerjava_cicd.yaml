@@ -67,32 +67,6 @@ pipeline:
                         echo "   Lines: ${LINE_COVERAGE}%"
                         echo "   Branches: ${BRANCH_COVERAGE}%"
                         echo "   Instructions: ${INSTRUCTION_COVERAGE}%"
-                        
-                        # Afficher un résumé détaillé des fichiers
-                        echo "📋 Detailed Coverage Report:"
-                        echo "=========================="
-                        find target/site/jacoco -name "*.html" -not -name "index.html" -exec basename {} .html \; | head -10
-                        
-                        # Créer un résumé en markdown
-                        cat > coverage-summary.md << EOF
-                        # Code Coverage Report
-
-                        ## 📊 Overall Metrics
-                        - **Line Coverage**: ${LINE_COVERAGE}%
-                        - **Branch Coverage**: ${BRANCH_COVERAGE}%  
-                        - **Instruction Coverage**: ${INSTRUCTION_COVERAGE}%
-
-                        ## 📁 Report Files Generated
-                        - HTML Report: \`target/site/jacoco/index.html\`
-                        - XML Report: \`target/site/jacoco/jacoco.xml\`
-                        - CSV Report: \`target/site/jacoco/jacoco.csv\`
-
-                        ## 🎯 Coverage Status
-                        $(if [ "${LINE_COVERAGE}" -gt 80 ]; then echo "✅ Coverage threshold met"; else echo "❌ Coverage below 80%"; fi)
-                        EOF
-                                  
-                                  echo "📄 Coverage summary written to coverage-summary.md"
-                                  cat coverage-summary.md     
                       else
                         echo "❌ JaCoCo report not found"
                         exit 1
@@ -102,16 +76,16 @@ pipeline:
                       spec:
                         paths:
                           - target/surefire-reports/*.xml
-                  outputVariables:
-                    - name: LINE_COVERAGE
-                      type: String
-                      value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.LINE_COVERAGE>
-                    - name: BRANCH_COVERAGE
-                      type: String
-                      value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.BRANCH_COVERAGE>
-                    - name: INSTRUCTION_COVERAGE
-                      type: String
-                      value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.INSTRUCTION_COVERAGE>
+                    outputVariables:
+                      - name: LINE_COVERAGE
+                        type: String
+                        value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.LINE_COVERAGE>
+                      - name: BRANCH_COVERAGE
+                        type: String
+                        value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.BRANCH_COVERAGE>
+                      - name: INSTRUCTION_COVERAGE
+                        type: String
+                        value: <+execution.steps.Maven_Test_Coverage.output.outputVariables.INSTRUCTION_COVERAGE>
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
