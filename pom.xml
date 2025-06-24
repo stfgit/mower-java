@@ -20,7 +20,7 @@
 		<java.version>21</java.version>
 		<junit-jupiter-api.version>5.11.0-M2</junit-jupiter-api.version>
 		<assertj-core.version>3.26.0</assertj-core.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <jacoco.version>0.8.13</jacoco.version>
 	</properties>
 	
 	<dependencies>
