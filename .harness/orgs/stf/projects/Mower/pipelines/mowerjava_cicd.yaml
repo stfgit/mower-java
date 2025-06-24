@@ -53,7 +53,6 @@ pipeline:
                     command: |-
                       echo "🧪 Running tests with JaCoCo coverage..."
 
-                      # Exécuter tests avec coverage
                       mvn test jacoco:report -B
 
                       if [ -d "target/site/jacoco" ]; then
