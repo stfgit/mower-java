@@ -60,7 +60,7 @@ pipeline:
                         if [ -f target/site/jacoco/jacoco.csv ]; then
                           echo "🔍 Analyzing JaCoCo CSV..."
                           
-                          # ✅ CORRECTION: Sommer toutes les lignes (sauf l'en-tête)
+                          # Sommer toutes les lignes (sauf l'en-tête)
                           # Colonnes: 8=LINE_MISSED, 9=LINE_COVERED
                           TOTALS=$(awk -F',' '
                             BEGIN { missed=0; covered=0 }
@@ -106,10 +106,8 @@ pipeline:
                             LINE_PERCENT="0.0"
                           fi
                           
-                          # Debug final
                           echo ""
                           echo "🔍 Manual verification:"
-                          echo "Expected from screenshot: ~85.7% (66/77 lines)"
                           echo "Calculated result: ${LINE_PERCENT}% (${LINE_COVERED}/${LINE_TOTAL} lines)"
                           
                         fi
