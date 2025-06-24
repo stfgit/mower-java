@@ -61,16 +61,21 @@ pipeline:
                         # Afficher un résumé dans les logs
                         echo "📈 Coverage Summary:"
                         if [ -f "target/site/jacoco/jacoco.csv" ]; then    
-                          # Calculer et afficher le pourcentage de couverture
-                          LINE_MISSED=$(awk -F',' 'NR==2 {print $8}' target/site/jacoco/jacoco.csv || echo "0")
-                          LINE_COVERED=$(awk -F',' 'NR==2 {print $9}' target/site/jacoco/jacoco.csv || echo "0")
-                          LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
+                          LINE_MISSED=$(awk -F',' 'NR==2 {print $8}' target/site/jacoco/jacoco.csv | tr -d '\r' | xargs || echo "0")
+                          LINE_COVERED=$(awk -F',' 'NR==2 {print $9}' target/site/jacoco/jacoco.csv | tr -d '\r' | xargs || echo "0")
+                          
+                          # Forcer à des entiers sûrs
+                          LINE_MISSED=${LINE_MISSED:-0}
+                          LINE_COVERED=${LINE_COVERED:-0}
+
+                          LINE_TOTAL=$(echo "$LINE_MISSED + $LINE_COVERED" | bc)
                           
                           if [ "$LINE_TOTAL" -gt 0 ]; then
                             LINE_PERCENT=$(echo "scale=1; $LINE_COVERED * 100 / $LINE_TOTAL" | bc -l 2>/dev/null || echo "0")
                             echo "📊 Line Coverage: ${LINE_PERCENT}% ($LINE_COVERED/$LINE_TOTAL lines)"
+                            echo "LINE_PERCENT=${LINE_PERCENT}" >> "$HARNESS_OUTPUT_VARIABLES"
                           fi
-                        fi
+                      fi
                       else
                         echo "⚠️ JaCoCo report directory not found"
                         echo "Checking Maven output..."
