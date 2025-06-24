@@ -85,6 +85,51 @@ pipeline:
                         type: String
                         value: LINE_PERCENT
               - step:
+                  type: Run
+                  name: Coverage Quality Gate
+                  identifier: Coverage_Quality_Gate
+                  spec:
+                    connectorRef: Dockerhub
+                    image: alpine:latest
+                    shell: Sh
+                    command: |-
+                      # Installer bc pour les calculs (si pas disponible)
+                      apk add --no-cache bc >/dev/null 2>&1 || true
+
+                      echo "🎯 COVERAGE QUALITY GATE"
+                      echo "======================="
+
+                      # Récupérer la variable de l'étape précédente
+                      COVERAGE="<+pipeline.stages.Build_and_test.spec.execution.steps.Maven_Test_Coverage.output.outputVariables.COVERAGE_PERCENT>"
+
+                      echo "📊 Current Coverage: ${COVERAGE}%"
+
+                      # Définir les seuils
+                      MIN_COVERAGE=70
+                      TARGET_COVERAGE=80
+
+                      # Vérification des seuils
+                      if [ "$(echo "${COVERAGE} >= ${TARGET_COVERAGE}" | bc -l)" -eq 1 ]; then
+                        echo "🎉 EXCELLENT! Coverage ${COVERAGE}% exceeds target ${TARGET_COVERAGE}%"
+                        exit 0
+                      elif [ "$(echo "${COVERAGE} >= ${MIN_COVERAGE}" | bc -l)" -eq 1 ]; then
+                        echo "✅ PASS! Coverage ${COVERAGE}% meets minimum ${MIN_COVERAGE}%"
+                        echo "💡 Try to reach target ${TARGET_COVERAGE}% for excellent quality"
+                        exit 0
+                      else
+                        echo "❌ FAIL! Coverage ${COVERAGE}% below minimum ${MIN_COVERAGE}%"
+                        echo "🚨 Deployment blocked - please improve test coverage"
+                        exit 1
+                      fi
+                  when:
+                    stageStatus: Success
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: MarkAsFailure
+              - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
                   identifier: Build_and_Push_Docker_Image
