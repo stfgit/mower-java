@@ -58,21 +58,63 @@ pipeline:
                       if [ -d "target/site/jacoco" ]; then
                         echo "📈 Coverage Summary:"
                         if [ -f target/site/jacoco/jacoco.csv ]; then
-                          LINE_MISSED=$(awk -F',' 'NR==2 {gsub("\r","",$8); print $8}' target/site/jacoco/jacoco.csv)
-                          LINE_COVERED=$(awk -F',' 'NR==2 {gsub("\r","",$9); print $9}' target/site/jacoco/jacoco.csv)
-                          LINE_MISSED=${LINE_MISSED:-0}
-                          LINE_COVERED=${LINE_COVERED:-0}
+                          echo "🔍 Analyzing JaCoCo CSV..."
+                          
+                          # ✅ CORRECTION: Sommer toutes les lignes (sauf l'en-tête)
+                          # Colonnes: 8=LINE_MISSED, 9=LINE_COVERED
+                          TOTALS=$(awk -F',' '
+                            BEGIN { missed=0; covered=0 }
+                            NR>1 { 
+                              # Nettoyer les retours chariot et sommer
+                              gsub(/\r/, "", $8); gsub(/\r/, "", $9)
+                              if ($8 ~ /^[0-9]+$/) missed += $8
+                              if ($9 ~ /^[0-9]+$/) covered += $9
+                            }
+                            END { print missed "," covered }
+                          ' target/site/jacoco/jacoco.csv)
+                          
+                          LINE_MISSED=$(echo "$TOTALS" | cut -d',' -f1)
+                          LINE_COVERED=$(echo "$TOTALS" | cut -d',' -f2)
                           LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
+
+                          echo "📊 Coverage calculation:"
+                          echo "   Lines missed: $LINE_MISSED"
+                          echo "   Lines covered: $LINE_COVERED"  
+                          echo "   Total lines: $LINE_TOTAL"
 
                           if [ "$LINE_TOTAL" -gt 0 ]; then
                             LINE_PERCENT=$(awk -v covered="$LINE_COVERED" -v total="$LINE_TOTAL" \
                               'BEGIN { printf("%.1f", total>0 ? covered*100/total : 0) }')
                             echo "📊 Line Coverage: ${LINE_PERCENT}% ($LINE_COVERED/$LINE_TOTAL lines)"
+                            
+                            # Affichage par classe pour debug
+                            echo ""
+                            echo "📋 Coverage by class:"
+                            awk -F',' 'NR>1 { 
+                              gsub(/\r/, "", $8); gsub(/\r/, "", $9)
+                              if ($8 ~ /^[0-9]+$/ && $9 ~ /^[0-9]+$/) {
+                                total = $8 + $9
+                                if (total > 0) {
+                                  percent = $9 * 100 / total
+                                  printf("   %-30s: %5.1f%% (%d/%d)\n", $3, percent, $9, total)
+                                }
+                              }
+                            }' target/site/jacoco/jacoco.csv
+                            
+                          else
+                            echo "❌ No lines found for coverage calculation"
+                            LINE_PERCENT="0.0"
                           fi
+                          
+                          # Debug final
+                          echo ""
+                          echo "🔍 Manual verification:"
+                          echo "Expected from screenshot: ~85.7% (66/77 lines)"
+                          echo "Calculated result: ${LINE_PERCENT}% (${LINE_COVERED}/${LINE_TOTAL} lines)"
+                          
                         fi
                       else
                         echo "⚠️ JaCoCo report directory not found"
-                        echo "Checking Maven output..."
                         mvn jacoco:help -Ddetail=true
                       fi
                     reports:
