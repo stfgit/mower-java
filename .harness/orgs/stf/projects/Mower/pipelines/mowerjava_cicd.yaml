@@ -75,15 +75,15 @@ pipeline:
                         echo "Checking Maven output..."
                         mvn jacoco:help -Ddetail=true
                       fi
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - target/surefire-reports/*.xml
                     outputVariables:
                       - name: COVERAGE_PERCENT
                         type: String
                         value: LINE_PERCENT
-                  reports:
-                    type: JUnit
-                    spec:
-                      paths:
-                        - target/surefire-reports/*.xml
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
