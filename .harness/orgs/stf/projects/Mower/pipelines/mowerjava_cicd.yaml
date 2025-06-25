@@ -26,21 +26,36 @@ pipeline:
               os: Linux
           execution:
             steps:
-              - step:
-                  type: Owasp
-                  name: Owasp
-                  identifier: Owasp
-                  spec:
-                    mode: orchestration
-                    config: default
-                    target:
-                      type: repository
-                      detection: auto
-                    advanced:
-                      log:
-                        level: info
-                      fail_on_severity: high
-                    connectorRef: Dockerhub
+              - parallel:
+                  - step:
+                      type: Owasp
+                      name: Owasp
+                      identifier: Owasp
+                      spec:
+                        mode: orchestration
+                        config: default
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: high
+                        connectorRef: Dockerhub
+                  - step:
+                      type: AquaTrivy
+                      name: AquaTrivy
+                      identifier: AquaTrivy
+                      spec:
+                        mode: orchestration
+                        config: fs
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                        privileged: true
               - step:
                   type: Run
                   name: Maven Build
