@@ -56,33 +56,6 @@ pipeline:
                           log:
                             level: info
                         privileged: true
-                  - step:
-                      type: Gitleaks
-                      name: Gitleaks
-                      identifier: Gitleaks
-                      spec:
-                        mode: orchestration
-                        config: default
-                        target:
-                          type: repository
-                          detection: auto
-                        advanced:
-                          log:
-                            level: info
-                  - step:
-                      type: Semgrep
-                      name: SAST Semgrep
-                      identifier: SAST_Semgrep
-                      spec:
-                        mode: orchestration
-                        config: default
-                        target:
-                          type: repository
-                          detection: auto
-                        advanced:
-                          log:
-                            level: info
-                          fail_on_severity: high
               - step:
                   type: Run
                   name: Maven Build
@@ -239,6 +212,35 @@ pipeline:
                           - AllErrors
                         action:
                           type: MarkAsFailure
+              - parallel:
+                  - step:
+                      type: Semgrep
+                      name: SAST Semgrep
+                      identifier: SAST_Semgrep
+                      spec:
+                        mode: orchestration
+                        config: default
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: high
+                    contextType: Pipeline
+                  - step:
+                      type: Gitleaks
+                      name: Gitleaks
+                      identifier: Gitleaks
+                      spec:
+                        mode: orchestration
+                        config: default
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
               - step:
                   type: BuildAndPushDockerRegistry
                   name: Build and Push Docker Image
