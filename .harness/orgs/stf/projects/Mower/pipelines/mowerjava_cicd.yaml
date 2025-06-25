@@ -35,13 +35,21 @@ pipeline:
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
+                      echo "Configuring Maven cache directory..."
+                      mkdir -p /harness/.m2/repository
+
                       echo "🔨 Starting Maven build..."
-                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.repo.local=/harness/.m2/repository -s settings.xml -B -V
                       echo "✅ Maven build completed successfully"
 
                       # Afficher les artefacts créés
                       echo "📦 Generated artifacts:"
                       ls -la target/*.jar 2>/dev/null || echo "No JAR files found"
+                    caching:
+                      enabled: true
+                      key: maven-deps-{{ checksum "pom.xml" }}-{{ checksum "**/pom.xml" }}
+                      paths:
+                        - /harness/.m2/repository
               - step:
                   type: Run
                   name: Maven Test with Coverage
@@ -53,7 +61,7 @@ pipeline:
                     command: |-
                       echo "🧪 Running tests with JaCoCo coverage..."
 
-                      mvn test jacoco:report -B
+                      mvn test jacoco:report -B -Dmaven.repo.local=/harness/.m2/repository -s settings.xml
 
                       if [ -d "target/site/jacoco" ]; then
                         echo "📈 Coverage Summary:"
@@ -115,6 +123,11 @@ pipeline:
                         echo "⚠️ JaCoCo report directory not found"
                         mvn jacoco:help -Ddetail=true
                       fi
+                    caching:
+                      enabled: true
+                      key: maven-deps-{{ checksum "pom.xml" }}-{{ checksum "**/pom.xml" }}
+                      paths:
+                        - /harness/.m2/repository
                     reports:
                       type: JUnit
                       spec:
@@ -315,3 +328,5 @@ pipeline:
   identifier: mowerjava_cicd
   tags: {}
   name: mower-java - ci-cd
+  delegateSelectors:
+    - helm-delegate
