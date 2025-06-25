@@ -27,6 +27,21 @@ pipeline:
           execution:
             steps:
               - step:
+                  type: Owasp
+                  name: Owasp
+                  identifier: Owasp
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                      fail_on_severity: high
+                    connectorRef: Dockerhub
+              - step:
                   type: Run
                   name: Maven Build
                   identifier: Maven_Build
