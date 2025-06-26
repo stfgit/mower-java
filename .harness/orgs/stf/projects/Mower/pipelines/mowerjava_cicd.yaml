@@ -242,6 +242,27 @@ pipeline:
                     buildArgs: {}
                   when:
                     stageStatus: Success
+              - step:
+                  type: AquaTrivy
+                  name: AquaTrivy_container
+                  identifier: AquaTrivy_container
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: container
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                      fail_on_severity: high
+                    privileged: true
+                    image:
+                      type: docker_v2
+                      tag: latest
+                      access_id: stfgit
+                      access_token: <+secrets.getValue("org.dockerhub")>
+                      name: stfgit/mower-java
           caching:
             enabled: true
             paths:
