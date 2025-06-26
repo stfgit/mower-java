@@ -41,7 +41,7 @@ pipeline:
                           log:
                             level: info
                           fail_on_severity: high
-                        connectorRef: Dockerhub
+                        connectorRef: org.Dockerhub
                   - step:
                       type: AquaTrivy
                       name: AquaTrivy
@@ -76,7 +76,7 @@ pipeline:
                   name: Maven Build
                   identifier: Maven_Build
                   spec:
-                    connectorRef: Dockerhub
+                    connectorRef: org.Dockerhub
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
@@ -100,7 +100,7 @@ pipeline:
                   name: Maven Test with Coverage
                   identifier: Maven_Test_Coverage
                   spec:
-                    connectorRef: Dockerhub
+                    connectorRef: org.Dockerhub
                     image: maven:3.9.6-eclipse-temurin-21
                     shell: Sh
                     command: |-
@@ -187,7 +187,7 @@ pipeline:
                   name: Coverage Quality Gate
                   identifier: Coverage_Quality_Gate
                   spec:
-                    connectorRef: Dockerhub
+                    connectorRef: org.Dockerhub
                     image: alpine:latest
                     shell: Sh
                     command: |-
@@ -232,7 +232,7 @@ pipeline:
                   name: Build and Push Docker Image
                   identifier: Build_and_Push_Docker_Image
                   spec:
-                    connectorRef: Dockerhub
+                    connectorRef: org.Dockerhub
                     repo: stfgit/mower-java
                     tags:
                       - <+pipeline.executionId>
