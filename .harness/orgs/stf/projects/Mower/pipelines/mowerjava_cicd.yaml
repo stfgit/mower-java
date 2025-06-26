@@ -264,11 +264,11 @@ pipeline:
                       access_token: <+secrets.getValue("org.dockerhub")>
                       name: stfgit/mower-java
           caching:
-            enabled: true
+            enabled: false
             paths:
               - /root/.m2
           buildIntelligence:
-            enabled: true
+            enabled: false
     - stage:
         name: Deploy and execute job
         identifier: Deploy_and_execute_job
