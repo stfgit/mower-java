@@ -2,6 +2,7 @@ infrastructureDefinition:
   name: mower_infra
   identifier: mower_infra
   orgIdentifier: stf
+  projectIdentifier: Mower
   environmentRef: dev
   deploymentType: Kubernetes
   type: KubernetesDirect
