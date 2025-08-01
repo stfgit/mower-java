@@ -1,6 +1,0 @@
-environment:
-  name: dev
-  identifier: dev
-  orgIdentifier: stf
-  projectIdentifier: Mower
-  type: PreProduction
