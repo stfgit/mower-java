@@ -149,7 +149,7 @@ pipeline:
                 type: Deployment
                 spec:
                   environment:
-                    environmentRef: dev
+                    environmentRef: Org.dev
                     infrastructureDefinitions:
                       - identifier: mower_infra
                   service:
@@ -193,7 +193,7 @@ pipeline:
                 type: Deployment
                 spec:
                   environment:
-                    environmentRef: prod
+                    environmentRef: Org.prod
                     infrastructureDefinitions:
                       - identifier: mower_infra
                 delegateSelectors:
