@@ -1,0 +1,10 @@
+---
+environment:
+  orgIdentifier: "stf"
+  description: ""
+  tags: {}
+  type: "PreProduction"
+  yaml: "environment:\n  name: \"dev \"\n  identifier: dev\n  orgIdentifier: stf\n\
+    \  type: PreProduction\n  description: \"\"\n  tags: {}\n"
+  identifier: "prod"
+  name: "prod"
