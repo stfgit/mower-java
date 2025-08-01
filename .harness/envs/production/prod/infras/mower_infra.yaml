@@ -1,0 +1,13 @@
+infrastructureDefinition:
+  name: mower_infra
+  identifier: mower_infra
+  orgIdentifier: stf
+  projectIdentifier: Mower
+  environmentRef: prod
+  deploymentType: Kubernetes
+  type: KubernetesDirect
+  spec:
+    connectorRef: org.kubdesktop
+    namespace: prod
+    releaseName: release-<+INFRA_KEY_SHORT_ID>
+  allowSimultaneousDeployments: false
