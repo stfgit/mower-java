@@ -204,3 +204,27 @@ Expected output:
 - `commandsTest.txt` - Reference test case from requirements
 
 **Key Test:** `testExecuteBizTest()` validates the system against the provided exercise requirements.
+
+## Web Interface
+
+The application includes a modern web interface for interactive mower control:
+
+**Access:** `http://localhost:8080/`
+
+**Features:**
+
+- **Interactive Lawn Grid:** Visual representation with clickable cells
+- **Mower Placement:** Click on grid or use position controls
+- **Manual Control:** Individual command buttons (Left/Right/Forward)
+- **Sequence Mode:** Execute command strings like "GAGAGAGAA"
+- **Batch Mode:** Multiple mowers with different starting positions
+- **Real-time Visualization:** Live mower position and path tracking
+- **Responsive Design:** Works on desktop and mobile devices
+
+**Interface Components:**
+
+- Lawn dimension configuration (1x1 to 20x20)
+- Visual mower with directional arrows (↑ ↓ ← →)
+- Path tracing showing mower's journey
+- Results panel with timestamped operations
+- Error handling and status feedback

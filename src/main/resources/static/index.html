@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MowItNow - Contrôle de Tondeuse</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 MowItNow - Contrôle de Tondeuse</h1>
+            <div class="status" id="status">En attente...</div>
+        </header>
+
+        <div class="main-content">
+            <div class="lawn-section">
+                <h2>Pelouse</h2>
+                <div class="lawn-controls">
+                    <label>Dimensions (largeur x hauteur):</label>
+                    <input type="number" id="lawnWidth" value="5" min="1" max="20">
+                    <span>x</span>
+                    <input type="number" id="lawnHeight" value="5" min="1" max="20">
+                    <button onclick="createLawn()">Créer la pelouse</button>
+                </div>
+                <div id="lawnGrid" class="lawn-grid"></div>
+            </div>
+
+            <div class="control-section">
+                <h2>Contrôles</h2>
+                
+                <div class="mower-setup">
+                    <h3>Position initiale</h3>
+                    <div class="position-controls">
+                        <label>X: <input type="number" id="mowerX" value="1" min="0"></label>
+                        <label>Y: <input type="number" id="mowerY" value="2" min="0"></label>
+                        <label>Direction: 
+                            <select id="mowerDirection">
+                                <option value="N">Nord (N)</option>
+                                <option value="E">Est (E)</option>
+                                <option value="S">Sud (S)</option>
+                                <option value="W">Ouest (W)</option>
+                            </select>
+                        </label>
+                        <button onclick="placeMower()">Placer la tondeuse</button>
+                    </div>
+                </div>
+
+                <div class="manual-controls">
+                    <h3>Contrôle manuel</h3>
+                    <div class="direction-buttons">
+                        <button onclick="sendCommand('G')" class="btn-direction">↶ Gauche (G)</button>
+                        <button onclick="sendCommand('A')" class="btn-forward">↑ Avancer (A)</button>
+                        <button onclick="sendCommand('D')" class="btn-direction">↷ Droite (D)</button>
+                    </div>
+                </div>
+
+                <div class="sequence-controls">
+                    <h3>Séquence de commandes</h3>
+                    <input type="text" id="commandSequence" placeholder="Ex: GAGAGAGAA" maxlength="50">
+                    <button onclick="executeSequence()">Exécuter séquence</button>
+                </div>
+
+                <div class="batch-controls">
+                    <h3>Mode batch</h3>
+                    <textarea id="batchCommands" placeholder="Exemple:&#10;1 2 N&#10;GAGAGAGAA&#10;3 3 E&#10;AADAADADDA" rows="4"></textarea>
+                    <button onclick="executeBatch()">Exécuter batch</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <h2>Résultats</h2>
+            <div id="results" class="results"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
