@@ -1,6 +1,8 @@
 # values.yaml
 namespace: <+infra.namespace>
 jobName: mower-java-<+pipeline.startTs>
+deploymentName: mower-java-deployment
+serviceName: mower-java-service
 image: <+artifact.image>
 pipelineId: <+pipeline.executionId>
 environment: <+env.name>
@@ -21,3 +23,7 @@ job:
   completions: 1
   backoffLimit: 3
   ttlSecondsAfterFinished: 300
+
+# Configuration du deployment
+deployment:
+  replicas: 2

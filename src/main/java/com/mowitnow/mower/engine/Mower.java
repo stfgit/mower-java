@@ -29,7 +29,7 @@ public final class Mower {
     this.name = UUID.randomUUID().toString();
   }
 
-  Mower start(int x, int y, char pointer) {
+  public Mower start(int x, int y, char pointer) {
     LOGGER.debug("Start mower. x={} y={} pointer={}", x, y, pointer);
     try {
       lawn = lawn.clone();  // Clients (Remote.Class instances in sample) can switch  
@@ -73,7 +73,7 @@ public final class Mower {
 
   }
 
-  Mower execute(final String commands) {
+  public Mower execute(final String commands) {
     for (final char command : commands.toCharArray()) {
       LOGGER.debug("Mower {} received '{}'", name, command);
       switch (command) {
