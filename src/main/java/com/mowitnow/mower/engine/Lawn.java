@@ -22,7 +22,7 @@ public final class Lawn implements Cloneable {
   }
 
   final boolean checkAccess(final int x, final int y) {
-    return ((x < width) && (y < height));
+    return ((x >= 0) && (y >= 0) && (x < width) && (y < height));
   }
 
   final int getWidth() {
