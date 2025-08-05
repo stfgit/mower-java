@@ -1,6 +1,6 @@
 import { MowerCommandRequest, MowerResponse, BatchMowerRequest } from '@/types/mower';
 
-const API_BASE_URL = 'http://localhost:8080/api/mower';
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/api/mower`;
 
 export class MowerAPI {
   static async executeSingleMower(request: MowerCommandRequest): Promise<MowerResponse> {

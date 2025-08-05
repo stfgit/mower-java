@@ -3,7 +3,10 @@
     "allow": [
       "Bash(mvn clean:*)",
       "Bash(curl:*)",
-      "Bash(mvn jacoco:check:*)"
+      "Bash(mvn jacoco:check:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(docker build:*)"
     ],
     "deny": []
   }

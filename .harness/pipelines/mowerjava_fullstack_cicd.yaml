@@ -1,0 +1,279 @@
+pipeline:
+  orgIdentifier: stf
+  projectIdentifier: Mower
+  properties:
+    ci:
+      codebase:
+        connectorRef: org.gitstf
+        repoName: mower-java
+        build: <+input>
+        sparseCheckout: []
+  stages:
+    - stage:
+        name: Build and Test Backend
+        identifier: Build_and_Test_Backend
+        description: Build and test Spring Boot backend
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: org.kubdesktop
+              namespace: mower
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - parallel:
+                  - step:
+                      type: Owasp
+                      name: OWASP Backend
+                      identifier: OWASP_Backend
+                      spec:
+                        mode: orchestration
+                        config: default
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: high
+                        connectorRef: org.Dockerhub
+                  - step:
+                      type: AquaTrivy
+                      name: AquaTrivy Backend
+                      identifier: AquaTrivy_Backend
+                      spec:
+                        mode: orchestration
+                        config: fs
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                        privileged: true
+              - step:
+                  type: Run
+                  name: Backend Maven Build
+                  identifier: Backend_Maven_Build
+                  spec:
+                    connectorRef: org.Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      echo "🔨 Building Spring Boot backend..."
+                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.repo.local=/harness/.m2/repository -s settings.xml -B -V
+                      echo "✅ Backend build completed"
+                      ls -la target/*.jar 2>/dev/null || echo "No JAR files found"
+                    caching:
+                      enabled: true
+                      key: maven-deps-{{ checksum "pom.xml" }}
+                      paths:
+                        - /harness/.m2/repository
+              - step:
+                  type: Run
+                  name: Backend Tests with Coverage
+                  identifier: Backend_Tests_Coverage
+                  spec:
+                    connectorRef: org.Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      echo "🧪 Running backend tests with coverage..."
+                      mvn test jacoco:report jacoco:check -B -Dmaven.repo.local=/harness/.m2/repository -s settings.xml
+                      
+                      if [ -f target/site/jacoco/jacoco.csv ]; then
+                        TOTALS=$(awk -F',' 'BEGIN { missed=0; covered=0 } NR>1 { gsub(/\r/, "", $8); gsub(/\r/, "", $9); if ($8 ~ /^[0-9]+$/) missed += $8; if ($9 ~ /^[0-9]+$/) covered += $9 } END { print missed "," covered }' target/site/jacoco/jacoco.csv)
+                        LINE_MISSED=$(echo "$TOTALS" | cut -d',' -f1)
+                        LINE_COVERED=$(echo "$TOTALS" | cut -d',' -f2)
+                        LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
+                        
+                        if [ "$LINE_TOTAL" -gt 0 ]; then
+                          LINE_PERCENT=$(awk -v covered="$LINE_COVERED" -v total="$LINE_TOTAL" 'BEGIN { printf("%.1f", total>0 ? covered*100/total : 0) }')
+                          echo "📊 Backend Coverage: ${LINE_PERCENT}%"
+                        fi
+                      fi
+                    caching:
+                      enabled: true
+                      key: maven-deps-{{ checksum "pom.xml" }}
+                      paths:
+                        - /harness/.m2/repository
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - target/surefire-reports/*.xml
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and Push Backend Image
+                  identifier: Build_Push_Backend_Image
+                  spec:
+                    connectorRef: org.Dockerhub
+                    repo: stfgit/mower-java-backend
+                    tags:
+                      - <+pipeline.executionId>
+                      - latest
+                    dockerfile: Dockerfile
+                    context: .
+                    buildArgs: {}
+    - stage:
+        name: Build and Test Frontend
+        identifier: Build_and_Test_Frontend
+        description: Build and test Next.js frontend
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: org.kubdesktop
+              namespace: mower
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Frontend Build and Test
+                  identifier: Frontend_Build_Test
+                  spec:
+                    connectorRef: org.Dockerhub
+                    image: node:18-alpine
+                    shell: Sh
+                    command: |-
+                      cd mower-frontend
+                      
+                      echo "📦 Installing frontend dependencies..."
+                      npm ci
+                      
+                      echo "🔍 Running frontend linting..."
+                      npm run lint || echo "⚠️ Linting issues found"
+                      
+                      echo "🏗️ Building frontend application..."
+                      npm run build
+                      
+                      echo "✅ Frontend build completed"
+                      
+                      # Check build output
+                      ls -la .next/ || echo "Build output not found"
+                    caching:
+                      enabled: true
+                      key: npm-deps-{{ checksum "mower-frontend/package-lock.json" }}
+                      paths:
+                        - mower-frontend/node_modules
+                        - mower-frontend/.next/cache
+              - step:
+                  type: AquaTrivy
+                  name: AquaTrivy Frontend
+                  identifier: AquaTrivy_Frontend
+                  spec:
+                    mode: orchestration
+                    config: fs
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                    privileged: true
+                    source: mower-frontend
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and Push Frontend Image
+                  identifier: Build_Push_Frontend_Image
+                  spec:
+                    connectorRef: org.Dockerhub
+                    repo: stfgit/mower-java-frontend
+                    tags:
+                      - <+pipeline.executionId>
+                      - latest
+                    dockerfile: mower-frontend/Dockerfile
+                    context: mower-frontend
+                    buildArgs: {}
+    - stage:
+        name: Deploy Full Stack
+        identifier: Deploy_Full_Stack
+        description: Deploy both backend and frontend
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: mower_fullstack_service
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  artifacts:
+                    primary:
+                      primaryArtifactRef: <+input>
+                      sources: <+input>
+          environment:
+            environmentRef: org.dev
+            gitBranch: main
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: mower_infra
+          execution:
+            steps:
+              - step:
+                  type: K8sDelete
+                  name: Cleanup Old Deployments
+                  identifier: Cleanup_Old_Deployments
+                  spec:
+                    deleteResources:
+                      type: ManifestPath
+                      spec:
+                        manifestPaths:
+                          - cleanup-deployment.yaml
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+              - step:
+                  type: K8sApply
+                  name: Deploy Full Stack
+                  identifier: Deploy_Full_Stack_App
+                  spec:
+                    skipDryRun: false
+                    skipSteadyStateCheck: false
+                    skipRendering: false
+                    overrides: []
+                    filePaths:
+                      - backend-deployment.yaml
+                      - backend-service.yaml
+                      - frontend-deployment.yaml
+                      - frontend-service.yaml
+                      - configmap.yaml
+                  timeout: 15m
+              - step:
+                  type: K8sRollingDeploy
+                  name: Rolling Deploy Backend and Frontend
+                  identifier: Rolling_Deploy_Apps
+                  spec:
+                    skipDryRun: false
+                  timeout: 10m
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: MarkAsFailure
+        delegateSelectors:
+          - helm-delegate
+  identifier: mowerjava_fullstack_cicd
+  name: mower-java - fullstack ci-cd
+  tags:
+    - fullstack
+    - backend
+    - frontend
+  delegateSelectors:
+    - helm-delegate
