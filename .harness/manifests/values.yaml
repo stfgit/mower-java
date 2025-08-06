@@ -32,7 +32,7 @@ deployment:
 backend:
   deploymentName: mower-java-backend
   serviceName: mower-java-backend-service
-  image: <+artifact.image>
+  image: <+artifacts.backend_image>
   app:
     name: mower-java-backend
     resources:
@@ -51,7 +51,7 @@ backend:
 frontend:
   deploymentName: mower-frontend
   serviceName: mower-frontend-service
-  image: <+artifacts.sidecars.frontend_image.image>
+  image: <+artifacts.frontend_image>
   app:
     name: mower-frontend
     resources:

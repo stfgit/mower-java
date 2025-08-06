@@ -34,14 +34,11 @@ service:
                 digest: ""
               identifier: backend_image
               type: DockerRegistry
-        sidecars:
-          - sidecarRef: frontend_image
-            sources:
-              - spec:
-                  connectorRef: org.Dockerhub
-                  imagePath: stfgit/mower-java-frontend
-                  tag: <+input>
-                  digest: ""
-                identifier: frontend_image
-                type: DockerRegistry
+            - spec:
+                connectorRef: org.Dockerhub
+                imagePath: stfgit/mower-java-frontend
+                tag: <+input>
+                digest: ""
+              identifier: frontend_image
+              type: DockerRegistry
     type: Kubernetes
