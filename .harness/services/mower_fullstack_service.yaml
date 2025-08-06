@@ -29,7 +29,7 @@ service:
           sources:
             - spec:
                 connectorRef: org.Dockerhub
-                imagePath: stfgit/mower-java-backend
+                imagePath: stfgit/mower-java
                 tag: <+input>
                 digest: ""
               identifier: backend_image
