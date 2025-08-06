@@ -18,10 +18,8 @@ service:
                   paths:
                     - .harness/manifests/deployment.yaml
                     - .harness/manifests/service.yaml
-                    - .harness/manifests/job.yaml
                     - .harness/manifests/configmap.yaml
-                    - .harness/manifests/cleanup-job.yaml
-                    - .harness/manifests/rbac-jobs.yaml
+                    - .harness/manifests/values.yaml
                   repoName: mower-java
                   branch: main
               valuesPaths:
