@@ -92,10 +92,7 @@ public class MowerController {
     }
 
     @GetMapping("/health")
-    public ResponseEntity<java.util.Map<String, String>> health() {
-        java.util.Map<String, String> status = new java.util.HashMap<>();
-        status.put("status", "running");
-        status.put("service", "mower");
-        return ResponseEntity.ok(status);
+    public String health() {
+        return "Mower service is running";
     }
 }
