@@ -1,0 +1,47 @@
+service:
+  name: mower_fullstack_service
+  identifier: mower_fullstack_service
+  orgIdentifier: stf
+  projectIdentifier: Mower
+  serviceDefinition:
+    spec:
+      manifests:
+        - manifest:
+            identifier: fullstackmanifest
+            type: K8sManifest
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: org.gitstf
+                  gitFetchType: Branch
+                  paths:
+                    - .harness/manifests
+                  repoName: mower-java
+                  branch: main
+              valuesPaths:
+                - .harness/manifests/values.yaml
+              skipResourceVersioning: false
+              enableDeclarativeRollback: false
+      artifacts:
+        primary:
+          primaryArtifactRef: <+input>
+          sources:
+            - spec:
+                connectorRef: org.Dockerhub
+                imagePath: stfgit/mower-java-backend
+                tag: <+input>
+                digest: ""
+              identifier: backend_image
+              type: DockerRegistry
+        sidecars:
+          - sidecarRef: frontend_image
+            sources:
+              - spec:
+                  connectorRef: org.Dockerhub
+                  imagePath: stfgit/mower-java-frontend
+                  tag: <+input>
+                  digest: ""
+                identifier: frontend_image
+                type: DockerRegistry
+    type: Kubernetes

@@ -27,3 +27,41 @@ job:
 # Configuration du deployment
 deployment:
   replicas: 2
+
+# Configuration backend
+backend:
+  deploymentName: mower-java-backend
+  serviceName: mower-java-backend-service
+  image: <+artifact.image>
+  app:
+    name: mower-java-backend
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  deployment:
+    replicas: 2
+  service:
+    type: ClusterIP
+
+# Configuration frontend
+frontend:
+  deploymentName: mower-frontend
+  serviceName: mower-frontend-service
+  image: <+artifacts.sidecars.frontend_image.image>
+  app:
+    name: mower-frontend
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+  deployment:
+    replicas: 1
+  service:
+    type: ClusterIP
