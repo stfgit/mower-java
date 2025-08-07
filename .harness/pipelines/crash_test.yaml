@@ -1,0 +1,62 @@
+pipeline:
+  name: crash test
+  identifier: crash_test
+  projectIdentifier: Mower
+  orgIdentifier: stf
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.Github
+        repoName: stfgit/mower-java
+        build: <+input>
+  stages:
+    - stage:
+        name: sources scan
+        identifier: sources_scan
+        template:
+          templateRef: account.source_code_scan
+          versionLabel: v0.1
+          gitBranch: main
+          templateInputs:
+            type: SecurityTests
+            spec:
+              infrastructure:
+                type: KubernetesDirect
+                spec:
+                  connectorRef: account.k8sdocacloud
+                  namespace: <+input>.default(harness-ci)
+              execution:
+                steps:
+                  - parallel:
+                      - step:
+                          identifier: owasp
+                          type: Owasp
+                          spec:
+                            advanced:
+                              fail_on_severity: none
+                            resources:
+                              limits:
+                                memory: <+input>.default(2Gi)
+                                cpu: <+input>.default(500m)
+                      - step:
+                          identifier: aquatrivy
+                          type: AquaTrivy
+                          spec:
+                            advanced:
+                              fail_on_severity: none
+                            resources:
+                              limits:
+                                memory: <+input>
+                                cpu: <+input>
+                      - step:
+                          identifier: gitleaks
+                          type: Gitleaks
+                          spec:
+                            advanced:
+                              fail_on_severity: low
+                            resources:
+                              limits:
+                                memory: <+input>
+                                cpu: <+input>
+            delegateSelectors: <+input>
