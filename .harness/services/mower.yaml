@@ -15,7 +15,9 @@ service:
                 connectorRef: "org.gitstf"
                 gitFetchType: "Branch"
                 paths:
-                - ".harness/manifests"
+                - .harness/manifests/deployment.yaml
+                - .harness/manifests/service.yaml
+                - .harness/manifests/configmap.yaml
                 repoName: "mower-java"
                 branch: "main"
             valuesPaths:
