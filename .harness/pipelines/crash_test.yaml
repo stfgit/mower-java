@@ -118,3 +118,31 @@ pipeline:
                             memory: <+input>
                             cpu: <+input>
             delegateSelectors: <+input>
+    - stage:
+        name: images scan
+        identifier: images_scan
+        template:
+          templateRef: account.images_scan
+          versionLabel: v0.1
+          gitBranch: main
+          templateInputs:
+            type: SecurityTests
+            spec:
+              infrastructure:
+                type: KubernetesDirect
+                spec:
+                  connectorRef: account.k8sdocacloud
+                  namespace: <+input>.default(harness-ci)
+              execution:
+                steps:
+                  - step:
+                      identifier: aquatrivy_container
+                      type: AquaTrivy
+                      spec:
+                        advanced:
+                          fail_on_severity: none
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+            delegateSelectors: <+input>
