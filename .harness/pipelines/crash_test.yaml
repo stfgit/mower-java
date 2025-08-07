@@ -60,3 +60,61 @@ pipeline:
                                 memory: <+input>
                                 cpu: <+input>
             delegateSelectors: <+input>
+    - stage:
+        name: build and publish
+        identifier: build_and_publish
+        template:
+          templateRef: account.maven_build_stage_tplt
+          versionLabel: v0.1
+          gitBranch: main
+          templateInputs:
+            type: CI
+            spec:
+              infrastructure:
+                type: KubernetesDirect
+                spec:
+                  connectorRef: account.k8sdocacloud
+                  namespace: harness-ci
+              execution:
+                steps:
+                  - step:
+                      identifier: mvn_build
+                      type: Run
+                      spec:
+                        connectorRef: org.Dockerhub
+                        image: <+input>.default(maven:3.9.6-eclipse-temurin-21)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: mvn_test_with_coverage
+                      type: Run
+                      spec:
+                        connectorRef: org.Dockerhub
+                        image: <+input>.default(maven:3.9.6-eclipse-temurin-21)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: coverage_quality_gate
+                      type: Run
+                      spec:
+                        connectorRef: org.Dockerhub
+                        image: <+input>.default(alpine:latest)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: build_and_push_docker_image
+                      type: BuildAndPushDockerRegistry
+                      spec:
+                        connectorRef: org.Dockerhub
+                        repo: stfgit/mower-java
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+            delegateSelectors: <+input>
