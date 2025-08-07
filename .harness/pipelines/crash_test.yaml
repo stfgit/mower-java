@@ -159,6 +159,7 @@ pipeline:
             spec:
               environment:
                 environmentRef: dev
+                infrastructureDefinitions: <+input>
                 gitBranch: main
               service:
                 serviceRef: mower_service
