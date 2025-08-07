@@ -5,11 +5,3 @@ environment:
   description: ""
   tags: {}
   type: PreProduction
-  yaml: |
-    environment:
-      name: "dev "
-      identifier: dev
-      orgIdentifier: stf
-      type: PreProduction
-      description: ""
-      tags: {}
