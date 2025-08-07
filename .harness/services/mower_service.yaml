@@ -13,14 +13,13 @@ service:
               store:
                 type: Github
                 spec:
-                  connectorRef: org.gitstf
+                  connectorRef: account.Github
                   gitFetchType: Branch
                   paths:
                     - .harness/manifests/deployment.yaml
                     - .harness/manifests/service.yaml
                     - .harness/manifests/configmap.yaml
-                    - .harness/manifests/values.yaml
-                  repoName: mower-java
+                  repoName: stfgit/mower-java
                   branch: main
               valuesPaths:
                 - .harness/manifests/values.yaml
