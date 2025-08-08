@@ -147,8 +147,8 @@ pipeline:
                             cpu: <+input>
             delegateSelectors: <+input>
     - stage:
-        name: deploy dev
-        identifier: deploy_dev
+        name: dev deployment
+        identifier: dev_deployment
         tags: {}
         template:
           templateRef: account.deploy_k8s
@@ -158,24 +158,11 @@ pipeline:
             type: Deployment
             spec:
               environment:
-                environmentRef: dev
+                environmentRef: development
                 gitBranch: main
                 infrastructureDefinitions:
-                  - identifier: mower_infra
+                  - identifier: infra_dev
               service:
-                serviceRef: mower_service
-                serviceInputs:
-                  serviceDefinition:
-                    type: Kubernetes
-                    spec:
-                      artifacts:
-                        primary:
-                          primaryArtifactRef: java_mower_image
-                          sources:
-                            - identifier: java_mower_image
-                              type: DockerRegistry
-                              spec:
-                                tag: latest
-                gitBranch: main
+                serviceRef: mower_kub
             delegateSelectors:
               - helm-delegate
