@@ -1,0 +1,5 @@
+service:
+  name: mower_kub
+  identifier: mower_kub
+  orgIdentifier: stf
+  projectIdentifier: Mower
