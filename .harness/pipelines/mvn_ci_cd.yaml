@@ -149,9 +149,9 @@ pipeline:
                 type: Deployment
                 spec:
                   environment:
-                    environmentRef: dev
+                    environmentRef: development
                     infrastructureDefinitions:
-                      - identifier: mower_infra
+                      - identifier: infra_dev
                   service:
                     serviceRef: mower_service
                     serviceInputs:
