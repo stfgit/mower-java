@@ -148,14 +148,21 @@ pipeline:
             type: Deployment
             spec:
               environment:
-                environmentRef: <+input>
-                environmentInputs: <+input>
-                serviceOverrideInputs: <+input>
-                infrastructureDefinitions: <+input>
+                environmentRef: development
+                infrastructureDefinitions:
+                  - identifier: infra_dev
               service:
-                serviceRef: <+input>
-                serviceInputs: <+input>
-            delegateSelectors: <+input>
+                serviceRef: mower_svc
+                serviceInputs:
+                  serviceDefinition:
+                    type: Kubernetes
+                    spec:
+                      artifacts:
+                        primary:
+                          primaryArtifactRef: javaImage
+                gitBranch: main
+            delegateSelectors:
+              - helm-delegate
     - stage:
         name: mep approval
         identifier: mep_approval
@@ -185,14 +192,14 @@ pipeline:
             type: Deployment
             spec:
               environment:
-                environmentRef: <+input>
-                environmentInputs: <+input>
-                serviceOverrideInputs: <+input>
-                infrastructureDefinitions: <+input>
+                environmentRef: prod
+                infrastructureDefinitions:
+                  - identifier: mower_infra
               service:
                 useFromStage:
                   stage: deploy_dev
-            delegateSelectors: <+input>
+            delegateSelectors:
+              - helm-delegate
   name: mvn ci cd - copy tplt
   identifier: mvn_ci_cd_copy_tplt
   tags: {}
