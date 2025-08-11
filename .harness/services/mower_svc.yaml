@@ -1,0 +1,5 @@
+service:
+  name: mower_svc
+  identifier: mower_svc
+  orgIdentifier: stf
+  projectIdentifier: Mower
