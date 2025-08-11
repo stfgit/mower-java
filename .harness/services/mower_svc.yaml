@@ -3,3 +3,37 @@ service:
   identifier: mower_svc
   orgIdentifier: stf
   projectIdentifier: Mower
+  serviceDefinition:
+    spec:
+      manifests:
+        - manifest:
+            identifier: manifestsJava
+            type: K8sManifest
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: account.Github
+                  gitFetchType: Branch
+                  paths:
+                    - .harness/manifests/deployment.yaml
+                    - .harness/manifests/service.yaml
+                    - .harness/manifests/configmap.yaml
+                  repoName: stfgit/mower-java
+                  branch: main
+              valuesPaths:
+                - .harness/manifests/values.yaml
+              skipResourceVersioning: false
+              enableDeclarativeRollback: false
+      artifacts:
+        primary:
+          primaryArtifactRef: <+input>
+          sources:
+            - spec:
+                connectorRef: org.Dockerhub
+                imagePath: stfgit/mower-java
+                tag: latest
+                digest: ""
+              identifier: javaImage
+              type: DockerRegistry
+    type: Kubernetes
