@@ -163,6 +163,14 @@ pipeline:
                 infrastructureDefinitions:
                   - identifier: infra_dev
               service:
-                serviceRef: mower_kub
+                serviceRef: mower_svc
+                serviceInputs:
+                  serviceDefinition:
+                    type: Kubernetes
+                    spec:
+                      artifacts:
+                        primary:
+                          primaryArtifactRef: javaImage
+                gitBranch: main
             delegateSelectors:
               - helm-delegate
