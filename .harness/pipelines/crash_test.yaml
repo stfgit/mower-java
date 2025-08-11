@@ -171,6 +171,7 @@ pipeline:
                       artifacts:
                         primary:
                           primaryArtifactRef: javaImage
+                          sources: ""
                 gitBranch: main
             delegateSelectors:
               - helm-delegate
