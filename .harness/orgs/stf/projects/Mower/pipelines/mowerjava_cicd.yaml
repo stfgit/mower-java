@@ -1,0 +1,396 @@
+pipeline:
+  orgIdentifier: stf
+  projectIdentifier: Mower
+  properties:
+    ci:
+      codebase:
+        connectorRef: org.gitstf
+        repoName: mower-java
+        build: <+input>
+        sparseCheckout: []
+  stages:
+    - stage:
+        name: Build and test
+        identifier: Build_and_test
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: org.kubdesktop
+              namespace: mower
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - parallel:
+                  - step:
+                      type: Owasp
+                      name: Owasp
+                      identifier: Owasp
+                      spec:
+                        mode: orchestration
+                        config: default
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: high
+                        connectorRef: org.Dockerhub
+                  - step:
+                      type: AquaTrivy
+                      name: AquaTrivy
+                      identifier: AquaTrivy
+                      spec:
+                        mode: orchestration
+                        config: fs
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                        privileged: true
+                  - step:
+                      type: Semgrep
+                      name: SAST Semgrep
+                      identifier: SAST_Semgrep
+                      spec:
+                        mode: orchestration
+                        config: default
+                        target:
+                          type: repository
+                          detection: auto
+                        advanced:
+                          log:
+                            level: info
+                          fail_on_severity: high
+                    contextType: Pipeline
+              - step:
+                  type: Run
+                  name: Maven Build
+                  identifier: Maven_Build
+                  spec:
+                    connectorRef: org.Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      echo "Configuring Maven cache directory..."
+                      mkdir -p /harness/.m2/repository
+
+                      echo "🔨 Starting Maven build..."
+                      mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -Dmaven.repo.local=/harness/.m2/repository -s settings.xml -B -V
+                      echo "✅ Maven build completed successfully"
+
+                      # Afficher les artefacts créés
+                      echo "📦 Generated artifacts:"
+                      ls -la target/*.jar 2>/dev/null || echo "No JAR files found"
+                    caching:
+                      enabled: true
+                      key: maven-deps-{{ checksum "pom.xml" }}-{{ checksum "**/pom.xml" }}
+                      paths:
+                        - /harness/.m2/repository
+              - step:
+                  type: Run
+                  name: Maven Test with Coverage
+                  identifier: Maven_Test_Coverage
+                  spec:
+                    connectorRef: org.Dockerhub
+                    image: maven:3.9.6-eclipse-temurin-21
+                    shell: Sh
+                    command: |-
+                      echo "🧪 Running tests with JaCoCo coverage..."
+
+                      mvn test jacoco:report -B -Dmaven.repo.local=/harness/.m2/repository -s settings.xml
+
+                      if [ -d "target/site/jacoco" ]; then
+                        echo "📈 Coverage Summary:"
+                        if [ -f target/site/jacoco/jacoco.csv ]; then
+                          echo "🔍 Analyzing JaCoCo CSV..."
+                          
+                          # Sommer toutes les lignes (sauf l'en-tête)
+                          # Colonnes: 8=LINE_MISSED, 9=LINE_COVERED
+                          TOTALS=$(awk -F',' '
+                            BEGIN { missed=0; covered=0 }
+                            NR>1 { 
+                              # Nettoyer les retours chariot et sommer
+                              gsub(/\r/, "", $8); gsub(/\r/, "", $9)
+                              if ($8 ~ /^[0-9]+$/) missed += $8
+                              if ($9 ~ /^[0-9]+$/) covered += $9
+                            }
+                            END { print missed "," covered }
+                          ' target/site/jacoco/jacoco.csv)
+                          
+                          LINE_MISSED=$(echo "$TOTALS" | cut -d',' -f1)
+                          LINE_COVERED=$(echo "$TOTALS" | cut -d',' -f2)
+                          LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
+
+                          echo "📊 Coverage calculation:"
+                          echo "   Lines missed: $LINE_MISSED"
+                          echo "   Lines covered: $LINE_COVERED"  
+                          echo "   Total lines: $LINE_TOTAL"
+
+                          if [ "$LINE_TOTAL" -gt 0 ]; then
+                            LINE_PERCENT=$(awk -v covered="$LINE_COVERED" -v total="$LINE_TOTAL" \
+                              'BEGIN { printf("%.1f", total>0 ? covered*100/total : 0) }')
+                            echo "📊 Line Coverage: ${LINE_PERCENT}% ($LINE_COVERED/$LINE_TOTAL lines)"
+                            
+                            # Affichage par classe pour debug
+                            echo ""
+                            echo "📋 Coverage by class:"
+                            awk -F',' 'NR>1 { 
+                              gsub(/\r/, "", $8); gsub(/\r/, "", $9)
+                              if ($8 ~ /^[0-9]+$/ && $9 ~ /^[0-9]+$/) {
+                                total = $8 + $9
+                                if (total > 0) {
+                                  percent = $9 * 100 / total
+                                  printf("   %-30s: %5.1f%% (%d/%d)\n", $3, percent, $9, total)
+                                }
+                              }
+                            }' target/site/jacoco/jacoco.csv
+                            
+                          else
+                            echo "❌ No lines found for coverage calculation"
+                            LINE_PERCENT="0.0"
+                          fi
+                          
+                          echo ""
+                          echo "🔍 Manual verification:"
+                          echo "Calculated result: ${LINE_PERCENT}% (${LINE_COVERED}/${LINE_TOTAL} lines)"
+                          
+                        fi
+                      else
+                        echo "⚠️ JaCoCo report directory not found"
+                        mvn jacoco:help -Ddetail=true
+                      fi
+                    caching:
+                      enabled: true
+                      key: maven-deps-{{ checksum "pom.xml" }}-{{ checksum "**/pom.xml" }}
+                      paths:
+                        - /harness/.m2/repository
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - target/surefire-reports/*.xml
+                    outputVariables:
+                      - name: COVERAGE_PERCENT
+                        type: String
+                        value: LINE_PERCENT
+              - step:
+                  type: Run
+                  name: Coverage Quality Gate
+                  identifier: Coverage_Quality_Gate
+                  spec:
+                    connectorRef: org.Dockerhub
+                    image: alpine:latest
+                    shell: Sh
+                    command: |-
+                      # Installer bc pour les calculs (si pas disponible)
+                      apk add --no-cache bc >/dev/null 2>&1 || true
+
+                      echo "🎯 COVERAGE QUALITY GATE"
+                      echo "======================="
+
+                      # Récupérer la variable de l'étape précédente
+                      COVERAGE="<+pipeline.stages.Build_and_test.spec.execution.steps.Maven_Test_Coverage.output.outputVariables.COVERAGE_PERCENT>"
+
+                      echo "📊 Current Coverage: ${COVERAGE}%"
+
+                      # Définir les seuils
+                      MIN_COVERAGE=70
+                      TARGET_COVERAGE=80
+
+                      # Vérification des seuils
+                      if [ "$(echo "${COVERAGE} >= ${TARGET_COVERAGE}" | bc -l)" -eq 1 ]; then
+                        echo "🎉 EXCELLENT! Coverage ${COVERAGE}% exceeds target ${TARGET_COVERAGE}%"
+                        exit 0
+                      elif [ "$(echo "${COVERAGE} >= ${MIN_COVERAGE}" | bc -l)" -eq 1 ]; then
+                        echo "✅ PASS! Coverage ${COVERAGE}% meets minimum ${MIN_COVERAGE}%"
+                        echo "💡 Try to reach target ${TARGET_COVERAGE}% for excellent quality"
+                        exit 0
+                      else
+                        echo "❌ FAIL! Coverage ${COVERAGE}% below minimum ${MIN_COVERAGE}%"
+                        echo "🚨 Deployment blocked - please improve test coverage"
+                        exit 1
+                      fi
+                  when:
+                    stageStatus: Success
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: MarkAsFailure
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and Push Docker Image
+                  identifier: Build_and_Push_Docker_Image
+                  spec:
+                    connectorRef: org.Dockerhub
+                    repo: stfgit/mower-java
+                    tags:
+                      - <+pipeline.executionId>
+                      - latest
+                    dockerfile: Dockerfile
+                    context: .
+                    buildArgs: {}
+                  when:
+                    stageStatus: Success
+              - step:
+                  type: AquaTrivy
+                  name: AquaTrivy_container
+                  identifier: AquaTrivy_container
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: container
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                      fail_on_severity: none
+                    privileged: true
+                    image:
+                      type: docker_v2
+                      tag: latest
+                      access_id: stfgit
+                      access_token: <+secrets.getValue("org.dockerhub")>
+                      name: stfgit/mower-java
+          caching:
+            enabled: false
+            paths:
+              - /root/.m2
+          buildIntelligence:
+            enabled: false
+    - stage:
+        name: Deploy and execute job
+        identifier: Deploy_and_execute_job
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: mower_svc
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  artifacts:
+                    primary:
+                      primaryArtifactRef: javaImage
+          environment:
+            environmentRef: development
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: infra_dev
+          execution:
+            steps:
+              - step:
+                  type: K8sDelete
+                  name: Cleanup Old Jobs
+                  identifier: Cleanup_Old_Jobs
+                  spec:
+                    deleteResources:
+                      type: ManifestPath
+                      spec:
+                        manifestPaths:
+                          - cleanup-job.yaml
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+              - step:
+                  type: K8sApply
+                  name: Deploy Job
+                  identifier: Deploy_Job
+                  spec:
+                    skipDryRun: false
+                    skipSteadyStateCheck: false
+                    skipRendering: false
+                    overrides: []
+                    filePaths:
+                      - job.yaml
+                      - configmap.yaml
+                  timeout: 10m
+              - step:
+                  type: ShellScript
+                  name: Wait for Job Completion
+                  identifier: Wait_for_Job_Completion
+                  spec:
+                    shell: Bash
+                    executionTarget: {}
+                    source:
+                      type: Inline
+                      spec:
+                        script: |-
+                          JOB_NAME="mower-java-<+pipeline.startTs>"
+                          NAMESPACE="<+infra.namespace>"
+                          TIMEOUT=600  # 10 minutes
+                                      
+                          echo "Waiting for job $JOB_NAME to complete in namespace $NAMESPACE..."
+                                        
+                            # Attendre la completion
+                            kubectl wait --for=condition=complete job/$JOB_NAME -n $NAMESPACE --timeout=${TIMEOUT}s
+                            WAIT_RESULT=$?
+                                        
+                            # Récupérer les informations du job
+                            SUCCESS_COUNT=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}' 2>/dev/null || echo "0")
+                            FAILED_COUNT=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}' 2>/dev/null || echo "0")
+                                        
+                            echo "📊 Job Results:"
+                            echo "   kubectl wait result: $WAIT_RESULT"
+                            echo "   Successful pods: $SUCCESS_COUNT"
+                            echo "   Failed pods: $FAILED_COUNT"
+                                        
+                            if [ "$WAIT_RESULT" -eq 0 ] && [ "$SUCCESS_COUNT" -gt 0 ]; then
+                              echo "✅ Job completed successfully!"
+                              
+                              # Afficher les logs
+                              echo "📋 Application output:"
+                              kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE
+                              
+                              exit 0
+                            else
+                              echo "❌ Job did not complete successfully"
+                              
+                              # Logs de debug
+                              echo "🔍 All pods for this job:"
+                              kubectl get pods -l job-name=$JOB_NAME -n $NAMESPACE
+                              
+                              echo "🔍 Job logs:"
+                              kubectl logs -l job-name=$JOB_NAME -n $NAMESPACE --tail=50
+                              
+                              echo "🔍 Job description:"
+                              kubectl describe job $JOB_NAME -n $NAMESPACE
+                              
+                              exit 1
+                            fi
+                    environmentVariables: []
+                    outputVariables: []
+                    includeInfraSelectors: false
+                  timeout: 15m
+            rollbackSteps: []
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: MarkAsFailure
+        delegateSelectors:
+          - helm-delegate
+  identifier: mowerjava_cicd
+  tags: {}
+  name: mower-java - ci-cd
+  delegateSelectors:
+    - helm-delegate
