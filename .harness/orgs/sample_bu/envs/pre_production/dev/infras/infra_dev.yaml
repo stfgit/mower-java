@@ -1,0 +1,12 @@
+infrastructureDefinition:
+  name: infra_dev
+  identifier: infra_dev
+  orgIdentifier: sample_bu
+  environmentRef: dev
+  deploymentType: Kubernetes
+  type: KubernetesDirect
+  spec:
+    connectorRef: account.k8sdocacloud
+    namespace: harness-cd
+    releaseName: release-<+INFRA_KEY_SHORT_ID>
+  allowSimultaneousDeployments: false
