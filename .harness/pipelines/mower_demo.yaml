@@ -1,0 +1,199 @@
+pipeline:
+  name: mower demo
+  identifier: mower_demo
+  description: Depuis un template de pipeline
+  tags: {}
+  template:
+    templateRef: account.mvn_pipeline
+    versionLabel: v0.1
+    gitBranch: main
+    templateInputs:
+      properties:
+        ci:
+          codebase:
+            connectorRef: account.Github
+            repoName: stfgit/mower-java
+            build:
+              spec:
+                branch: main
+              type: branch
+      stages:
+        - stage:
+            identifier: source_code_scan
+            template:
+              templateInputs:
+                type: SecurityTests
+                spec:
+                  infrastructure:
+                    type: KubernetesDirect
+                    spec:
+                      connectorRef: account.k8sdocacloud
+                      namespace: harness-ci
+                  execution:
+                    steps:
+                      - parallel:
+                          - step:
+                              identifier: owasp
+                              type: Owasp
+                              spec:
+                                advanced:
+                                  fail_on_severity: none
+                                resources:
+                                  limits:
+                                    memory: <+input>.default(2Gi)
+                                    cpu: <+input>.default(500m)
+                          - step:
+                              identifier: aquatrivy
+                              type: AquaTrivy
+                              spec:
+                                advanced:
+                                  fail_on_severity: none
+                                resources:
+                                  limits:
+                                    memory: ""
+                                    cpu: ""
+                          - step:
+                              identifier: gitleaks
+                              type: Gitleaks
+                              spec:
+                                advanced:
+                                  fail_on_severity: low
+                                resources:
+                                  limits:
+                                    memory: ""
+                                    cpu: ""
+                delegateSelectors:
+                  - ""
+        - stage:
+            identifier: mvn_build_and_push
+            template:
+              templateInputs:
+                type: CI
+                spec:
+                  infrastructure:
+                    type: KubernetesDirect
+                    spec:
+                      connectorRef: account.k8sdocacloud
+                      namespace: harness-ci
+                  execution:
+                    steps:
+                      - step:
+                          identifier: mvn_build
+                          type: Run
+                          spec:
+                            connectorRef: org.Dockerhub
+                            image: maven:3.9.6-eclipse-temurin-21
+                            resources:
+                              limits:
+                                memory: ""
+                                cpu: ""
+                      - step:
+                          identifier: mvn_test_with_coverage
+                          type: Run
+                          spec:
+                            connectorRef: org.Dockerhub
+                            image: maven:3.9.6-eclipse-temurin-21
+                            resources:
+                              limits:
+                                memory: ""
+                                cpu: ""
+                      - step:
+                          identifier: coverage_quality_gate
+                          type: Run
+                          spec:
+                            connectorRef: org.Dockerhub
+                            image: alpine:latest
+                            resources:
+                              limits:
+                                memory: ""
+                                cpu: ""
+                      - step:
+                          identifier: build_and_push_docker_image
+                          type: BuildAndPushDockerRegistry
+                          spec:
+                            connectorRef: org.Dockerhub
+                            repo: stfgit/mower-java
+                            resources:
+                              limits:
+                                memory: ""
+                                cpu: ""
+                delegateSelectors:
+                  - ""
+        - stage:
+            identifier: scan_images
+            template:
+              templateInputs:
+                type: SecurityTests
+                spec:
+                  infrastructure:
+                    type: KubernetesDirect
+                    spec:
+                      connectorRef: account.k8sdocacloud
+                      namespace: harness-ci
+                  execution:
+                    steps:
+                      - step:
+                          identifier: aquatrivy_container
+                          type: AquaTrivy
+                          spec:
+                            advanced:
+                              fail_on_severity: none
+                            resources:
+                              limits:
+                                memory: ""
+                                cpu: ""
+                delegateSelectors:
+                  - ""
+        - stage:
+            identifier: deploy_dev
+            template:
+              templateInputs:
+                type: Deployment
+                spec:
+                  environment:
+                    environmentRef: development
+                    infrastructureDefinitions:
+                      - identifier: infra_dev
+                  service:
+                    serviceRef: mower_svc
+                    serviceInputs:
+                      serviceDefinition:
+                        type: Kubernetes
+                        spec:
+                          artifacts:
+                            primary:
+                              primaryArtifactRef: javaImage
+                delegateSelectors:
+                  - helm-delegate
+        - stage:
+            identifier: mep_approval
+            template:
+              templateInputs:
+                type: Approval
+                spec:
+                  execution:
+                    steps:
+                      - step:
+                          identifier: approval
+                          type: HarnessApproval
+                          spec:
+                            approvers:
+                              minimumCount: <+input>.default(1)
+                              userGroups:
+                                - org.DevOps_Team
+                delegateSelectors:
+                  - ""
+        - stage:
+            identifier: deploy_prod
+            template:
+              templateInputs:
+                type: Deployment
+                spec:
+                  environment:
+                    environmentRef: prod
+                    infrastructureDefinitions:
+                      - identifier: mower_infra
+                delegateSelectors:
+                  - helm-delegate
+  projectIdentifier: Mower
+  orgIdentifier: stf
