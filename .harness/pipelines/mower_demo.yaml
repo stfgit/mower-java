@@ -163,6 +163,7 @@ pipeline:
                           artifacts:
                             primary:
                               primaryArtifactRef: javaImage
+                              sources: ""
                 delegateSelectors:
                   - helm-delegate
         - stage:
