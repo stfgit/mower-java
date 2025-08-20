@@ -112,10 +112,10 @@ pipeline:
                             cpu: <+input>
             delegateSelectors: <+input>
     - stage:
-        name: frontend build and push
-        identifier: frontend_build_and_push
+        name: npm build and push
+        identifier: npm_build_and_push
         template:
-          templateRef: account.build_stage_template
+          templateRef: account.npm_pipeline
           versionLabel: v0.1
           templateInputs:
             type: CI
@@ -128,39 +128,65 @@ pipeline:
               execution:
                 steps:
                   - step:
-                      identifier: run_build
+                      identifier: Install_Dependencies
                       type: Run
                       spec:
-                        connectorRef: <+input>.default(org.Dockerhub)
-                        image: <+input>.default(node:18-alpine)
-                        command: |-
-                          cd mower-frontend
-                          echo "📦 Installing frontend dependencies..."
-                          npm ci
-                          echo "🔍 Running frontend linting..."
-                          npm run lint || echo "⚠️ Linting issues found"
-                          echo "🏗️ Building frontend application..."
-                          npm run build
-                          echo "✅ Frontend build completed"
+                        connectorRef: <+input>
+                        image: <+input>.default(node:20)
                         resources:
                           limits:
-                            memory: <+input>.default(2Gi)
-                            cpu: <+input>.default(1000m)
+                            memory: <+input>
+                            cpu: <+input>
                   - step:
-                      identifier: frontend_docker_build_push
+                      identifier: ESLint_Check
+                      type: Run
+                      spec:
+                        connectorRef: <+input>
+                        image: <+input>.default(node:20)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: Build_Application
+                      type: Run
+                      spec:
+                        connectorRef: <+input>
+                        image: <+input>.default(node:20)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: Unit_Tests
+                      type: Run
+                      spec:
+                        connectorRef: <+input>
+                        image: <+input>.default(node:20)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: NPM_Audit
+                      type: Run
+                      spec:
+                        connectorRef: <+input>
+                        image: <+input>.default(node:20)
+                        resources:
+                          limits:
+                            memory: <+input>
+                            cpu: <+input>
+                  - step:
+                      identifier: BuildAndPushDockerRegistry_1
                       type: BuildAndPushDockerRegistry
                       spec:
                         connectorRef: <+input>
                         repo: <+input>
-                        tags:
-                          - <+pipeline.executionId>
-                          - latest
-                        dockerfile: mower-frontend/Dockerfile
-                        context: mower-frontend
                         resources:
                           limits:
-                            memory: <+input>.default(2Gi)
-                            cpu: <+input>.default(1000m)
+                            memory: <+input>
+                            cpu: <+input>
             delegateSelectors: <+input>
     - stage:
         name: scan images

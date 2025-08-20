@@ -103,7 +103,7 @@ inputSet:
               delegateSelectors:
                 - helm-delegate
       - stage:
-          identifier: frontend_build_and_push
+          identifier: npm_build_and_push
           template:
             templateInputs:
               spec:
@@ -114,16 +114,52 @@ inputSet:
                 execution:
                   steps:
                     - step:
-                        identifier: run_build
+                        identifier: Install_Dependencies
                         spec:
                           connectorRef: org.Dockerhub
-                          image: node:18-alpine
+                          image: node:20
                           resources:
                             limits:
                               memory: 2Gi
                               cpu: 1000m
                     - step:
-                        identifier: frontend_docker_build_push
+                        identifier: ESLint_Check
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: node:20
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
+                    - step:
+                        identifier: Build_Application
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: node:20
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
+                    - step:
+                        identifier: Unit_Tests
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: node:20
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
+                    - step:
+                        identifier: NPM_Audit
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: node:20
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
+                    - step:
+                        identifier: BuildAndPushDockerRegistry_1
                         spec:
                           connectorRef: org.Dockerhub
                           repo: stfgit/mower-java-frontend
