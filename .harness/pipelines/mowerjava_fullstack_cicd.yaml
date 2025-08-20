@@ -85,7 +85,7 @@ pipeline:
                     command: |-
                       echo "🧪 Running backend tests with coverage..."
                       mvn test jacoco:report jacoco:check -B -Dmaven.repo.local=/harness/.m2/repository -s settings.xml
-                      
+
                       if [ -f target/site/jacoco/jacoco.csv ]; then
                         TOTALS=$(awk -F',' 'BEGIN { missed=0; covered=0 } NR>1 { gsub(/\r/, "", $8); gsub(/\r/, "", $9); if ($8 ~ /^[0-9]+$/) missed += $8; if ($9 ~ /^[0-9]+$/) covered += $9 } END { print missed "," covered }' target/site/jacoco/jacoco.csv)
                         LINE_MISSED=$(echo "$TOTALS" | cut -d',' -f1)
@@ -147,18 +147,18 @@ pipeline:
                     shell: Sh
                     command: |-
                       cd mower-frontend
-                      
+
                       echo "📦 Installing frontend dependencies..."
                       npm ci
-                      
+
                       echo "🔍 Running frontend linting..."
                       npm run lint || echo "⚠️ Linting issues found"
-                      
+
                       echo "🏗️ Building frontend application..."
                       npm run build
-                      
+
                       echo "✅ Frontend build completed"
-                      
+
                       # Check build output
                       ls -la .next/ || echo "Build output not found"
                     caching:
@@ -213,11 +213,10 @@ pipeline:
                       primaryArtifactRef: <+input>
                       sources: <+input>
           environment:
-            environmentRef: org.dev
-            gitBranch: main
+            environmentRef: development
             deployToAll: false
             infrastructureDefinitions:
-              - identifier: mower_infra
+              - identifier: infra_dev
           execution:
             steps:
               - step:
@@ -260,6 +259,7 @@ pipeline:
                   spec:
                     skipDryRun: false
                   timeout: 10m
+            rollbackSteps: []
         tags: {}
         failureStrategies:
           - onFailure:
