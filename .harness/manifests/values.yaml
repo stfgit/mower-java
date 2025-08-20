@@ -3,7 +3,7 @@ namespace: <+infra.namespace>
 jobName: mower-java-<+pipeline.startTs>
 deploymentName: mower-java-deployment
 serviceName: mower-java-service
-image: <+artifacts.primary.image>
+image: <+artifacts.primary.backend_image>
 pipelineId: <+pipeline.executionId>
 environment: <+env.name>
 
@@ -32,7 +32,7 @@ deployment:
 backend:
   deploymentName: mower-java-backend
   serviceName: mower-java-backend-service
-  image: <+artifacts.primary.image>
+  image: <+artifacts.primary.backend_image>
   app:
     name: mower-java-backend
     resources:
@@ -51,7 +51,7 @@ backend:
 frontend:
   deploymentName: mower-frontend
   serviceName: mower-frontend-service
-  image: stfgit/mower-java-frontend:latest
+  image: <+artifacts.primary.frontend_image>
   app:
     name: mower-frontend
     resources:

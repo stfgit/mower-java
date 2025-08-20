@@ -33,9 +33,16 @@ service:
           sources:
             - spec:
                 connectorRef: org.Dockerhub
-                imagePath: stfgit/mower-java
+                imagePath: stfgit/mower-java-backend
                 tag: <+input>
                 digest: ""
               identifier: backend_image
+              type: DockerRegistry
+            - spec:
+                connectorRef: org.Dockerhub
+                imagePath: stfgit/mower-java-frontend
+                tag: <+input>
+                digest: ""
+              identifier: frontend_image
               type: DockerRegistry
     type: Kubernetes
