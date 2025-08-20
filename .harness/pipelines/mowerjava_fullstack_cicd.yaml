@@ -272,6 +272,6 @@ pipeline:
   identifier: mowerjava_fullstack_cicd
   name: mower-java - fullstack ci-cd
   tags:
-    - fullstack
-    - backend
-    - frontend
+    fullstack: ""
+    backend: ""
+    frontend: ""
