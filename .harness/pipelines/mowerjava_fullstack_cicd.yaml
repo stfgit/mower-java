@@ -275,5 +275,3 @@ pipeline:
     - fullstack
     - backend
     - frontend
-  delegateSelectors:
-    - helm-delegate
