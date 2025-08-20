@@ -25,7 +25,7 @@ class MowerMainApplicationTest {
     void testRunWithNoArguments() throws Exception {
         mowerApplication.run();
         
-        verify(remote).executeCommands("file:commandsTest.txt");
+        verify(remote).executeCommands("commandsTest.txt");
     }
 
     @Test
