@@ -115,8 +115,9 @@ pipeline:
         name: npm build and push
         identifier: npm_build_and_push
         template:
-          templateRef: account.npm_pipeline
+          templateRef: account.npm_build
           versionLabel: v0.1
+          gitBranch: main
           templateInputs:
             type: CI
             spec:
