@@ -22,7 +22,7 @@ service:
                   repoName: stfgit/mower-java
                   branch: main
               valuesPaths:
-                - .harness/manifests/values.yaml
+                - .harness/manifests/values.javaonly.yaml
               skipResourceVersioning: false
               enableDeclarativeRollback: false
       artifacts:
