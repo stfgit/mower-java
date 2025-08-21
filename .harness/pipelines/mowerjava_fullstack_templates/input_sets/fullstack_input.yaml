@@ -207,10 +207,14 @@ inputSet:
                               - identifier: backend_image
                                 type: DockerRegistry
                                 spec:
+                                  connectorRef: org.Dockerhub
+                                  imagePath: stfgit/mower-java-backend
                                   tag: <+pipeline.executionId>
                               - identifier: frontend_image
                                 type: DockerRegistry
                                 spec:
+                                  connectorRef: org.Dockerhub
+                                  imagePath: stfgit/mower-java-frontend
                                   tag: <+pipeline.executionId>
       - stage:
           identifier: mep_approval

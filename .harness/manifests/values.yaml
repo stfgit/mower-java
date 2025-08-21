@@ -3,7 +3,7 @@ namespace: <+infra.namespace>
 jobName: mower-java-<+pipeline.startTs>
 deploymentName: mower-java-deployment
 serviceName: mower-java-service
-image: <+artifacts.primary.backend_image>
+image: <+artifacts.primary.image>
 pipelineId: <+pipeline.executionId>
 environment: <+env.name>
 
