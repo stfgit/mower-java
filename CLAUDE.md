@@ -42,6 +42,12 @@ mvn clean package
 
 ```bash
 mvn test
+
+# Run single test class
+mvn test -Dtest=MowerMainApplicationTest
+
+# Run specific test method
+mvn test -Dtest=MowerMainApplicationTest#testExecuteBizTest
 ```
 
 **Run Tests with Coverage:**
@@ -228,3 +234,42 @@ The application includes a modern web interface for interactive mower control:
 - Path tracing showing mower's journey
 - Results panel with timestamped operations
 - Error handling and status feedback
+
+## Frontend Development
+
+The project includes a Next.js frontend in `mower-frontend/` with TypeScript and TailwindCSS:
+
+**Frontend Commands:**
+
+```bash
+cd mower-frontend
+
+# Development (uses Turbopack for faster builds)
+npm run dev
+
+# Build and production
+npm run build
+npm run start
+
+# Linting
+npm run lint
+```
+
+**Frontend Technologies:**
+
+- Next.js 15.4.5 with App Router
+- React 19.1.0
+- TypeScript 5
+- TailwindCSS 4
+- Turbopack for development builds
+
+**Docker Build:**
+
+```bash
+# Backend image
+docker build -t stfgit/mower-java .
+
+# Frontend image (from mower-frontend directory)
+cd mower-frontend
+docker build -t stfgit/mower-java-frontend .
+```
