@@ -134,68 +134,36 @@ pipeline:
                       spec:
                         connectorRef: <+input>
                         image: <+input>.default(node:20)
-                        command: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
                   - step:
                       identifier: ESLint_Check
                       type: Run
                       spec:
                         connectorRef: <+input>
                         image: <+input>.default(node:20)
-                        command: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
                   - step:
                       identifier: Build_Application
                       type: Run
                       spec:
                         connectorRef: <+input>
                         image: <+input>.default(node:20)
-                        command: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
                   - step:
                       identifier: Unit_Tests
                       type: Run
                       spec:
                         connectorRef: <+input>
                         image: <+input>.default(node:20)
-                        command: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
                   - step:
                       identifier: NPM_Audit
                       type: Run
                       spec:
                         connectorRef: <+input>
                         image: <+input>.default(node:20)
-                        command: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
                   - step:
                       identifier: BuildAndPushDockerRegistry_1
                       type: BuildAndPushDockerRegistry
                       spec:
                         connectorRef: <+input>
                         repo: <+input>
-                        tags: <+input>
-                        dockerfile: <+input>
-                        context: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
     - stage:
         name: scan images
         identifier: scan_images
