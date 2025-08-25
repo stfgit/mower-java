@@ -8,7 +8,7 @@ inputSet:
           repoName: stfgit/mower-java
           build:
             spec:
-              branch: ""
+              branch: main
             type: branch
     stages:
       - stage:
@@ -20,7 +20,7 @@ inputSet:
                 infrastructure:
                   type: KubernetesDirect
                   spec:
-                    connectorRef: ""
+                    connectorRef: account.k8sdocacloud
                     namespace: harness-ci
                 execution:
                   steps:
@@ -30,7 +30,7 @@ inputSet:
                             type: Owasp
                             spec:
                               advanced:
-                                fail_on_severity: ""
+                                fail_on_severity: none
                               resources:
                                 limits:
                                   memory: 2Gi
@@ -40,7 +40,7 @@ inputSet:
                             type: AquaTrivy
                             spec:
                               advanced:
-                                fail_on_severity: ""
+                                fail_on_severity: none
                               resources:
                                 limits:
                                   memory: ""
@@ -50,116 +50,137 @@ inputSet:
                             type: Gitleaks
                             spec:
                               advanced:
-                                fail_on_severity: ""
+                                fail_on_severity: low
                               resources:
                                 limits:
                                   memory: ""
                                   cpu: ""
               delegateSelectors: []
-      - parallel:
-          - stage:
-              identifier: mvn_build_and_push
-              template:
-                templateInputs:
-                  type: CI
+      - stage:
+          identifier: mvn_build_and_push
+          template:
+            templateInputs:
+              type: CI
+              spec:
+                infrastructure:
+                  type: KubernetesDirect
                   spec:
-                    infrastructure:
-                      type: KubernetesDirect
-                      spec:
-                        connectorRef: ""
-                        namespace: harness-ci
-                    execution:
-                      steps:
-                        - step:
-                            identifier: mvn_build
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: maven:3.9.6-eclipse-temurin-21
-                              resources:
-                                limits:
-                                  memory: ""
-                                  cpu: ""
-                        - step:
-                            identifier: mvn_test_with_coverage
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: maven:3.9.6-eclipse-temurin-21
-                              resources:
-                                limits:
-                                  memory: ""
-                                  cpu: ""
-                        - step:
-                            identifier: coverage_quality_gate
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: alpine:latest
-                              resources:
-                                limits:
-                                  memory: ""
-                                  cpu: ""
-                        - step:
-                            identifier: build_and_push_docker_image
-                            type: BuildAndPushDockerRegistry
-                            spec:
-                              connectorRef: ""
-                              repo: ""
-                              resources:
-                                limits:
-                                  memory: ""
-                                  cpu: ""
-                  delegateSelectors: []
-          - stage:
-              identifier: npm_build_and_push
-              template:
-                templateInputs:
-                  type: CI
+                    connectorRef: account.k8sdocacloud
+                    namespace: harness-ci
+                execution:
+                  steps:
+                    - step:
+                        identifier: mvn_build
+                        type: Run
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: maven:3.9.6-eclipse-temurin-21
+                          resources:
+                            limits:
+                              memory: ""
+                              cpu: ""
+                    - step:
+                        identifier: mvn_test_with_coverage
+                        type: Run
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: maven:3.9.6-eclipse-temurin-21
+                          resources:
+                            limits:
+                              memory: ""
+                              cpu: ""
+                    - step:
+                        identifier: coverage_quality_gate
+                        type: Run
+                        spec:
+                          connectorRef: org.Dockerhub
+                          image: alpine:latest
+                          resources:
+                            limits:
+                              memory: ""
+                              cpu: ""
+                    - step:
+                        identifier: build_and_push_docker_image
+                        type: BuildAndPushDockerRegistry
+                        spec:
+                          connectorRef: org.Dockerhub
+                          repo: stfgit/mower-java-backend
+                          resources:
+                            limits:
+                              memory: ""
+                              cpu: ""
+              delegateSelectors: []
+      - stage:
+          identifier: npm_build_and_push
+          template:
+            templateInputs:
+              type: CI
+              spec:
+                infrastructure:
+                  type: KubernetesDirect
                   spec:
-                    infrastructure:
-                      type: KubernetesDirect
-                      spec:
-                        connectorRef: ""
-                        namespace: harness-ci
-                    execution:
-                      steps:
-                        - step:
-                            identifier: Install_Dependencies
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: node:20
-                        - step:
-                            identifier: ESLint_Check
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: node:20
-                        - step:
-                            identifier: Build_Application
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: node:20
-                        - step:
-                            identifier: Unit_Tests
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: node:20
-                        - step:
-                            identifier: NPM_Audit
-                            type: Run
-                            spec:
-                              connectorRef: ""
-                              image: node:20
-                        - step:
-                            identifier: BuildAndPushDockerRegistry_1
-                            type: BuildAndPushDockerRegistry
-                            spec:
-                              connectorRef: ""
-                              repo: ""
+                    connectorRef: account.k8sdocacloud
+                    namespace: harness-ci
+                execution:
+                  steps:
+                    - step:
+                        identifier: Workspace_Validation
+                        spec:
+                          workingDirectory: "mower-frontend"
+                    - step:
+                        identifier: Install_Dependencies
+                        spec:
+                          workingDirectory: "mower-frontend"
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
+                    - step:
+                        identifier: Code_Quality_Check
+                        spec:
+                          workingDirectory: "mower-frontend"
+                          resources:
+                            limits:
+                              memory: 1Gi
+                              cpu: 500m
+                    - step:
+                        identifier: Build_Application
+                        spec:
+                          workingDirectory: "mower-frontend"
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
+                    - step:
+                        identifier: Run_Tests
+                        spec:
+                          workingDirectory: "mower-frontend"
+                          resources:
+                            limits:
+                              memory: 1Gi
+                              cpu: 500m
+                    - step:
+                        identifier: Security_Audit
+                        spec:
+                          workingDirectory: "mower-frontend"
+                          resources:
+                            limits:
+                              memory: 1Gi
+                              cpu: 500m
+                    - step:
+                        identifier: BuildAndPushDockerRegistry_1
+                        spec:
+                          connectorRef: org.Dockerhub
+                          repo: stfgit/mower-java-frontend
+                          context: mower-frontend
+                          dockerfile: mower-frontend/Dockerfile
+                          tags:
+                            - <+pipeline.executionId>
+                            - latest
+                          resources:
+                            limits:
+                              memory: 2Gi
+                              cpu: 1000m
       - stage:
           identifier: scan_images
           template:
@@ -169,7 +190,7 @@ inputSet:
                 infrastructure:
                   type: KubernetesDirect
                   spec:
-                    connectorRef: ""
+                    connectorRef: account.k8sdocacloud
                     namespace: harness-ci
                 execution:
                   steps:
@@ -178,7 +199,7 @@ inputSet:
                         type: AquaTrivy
                         spec:
                           advanced:
-                            fail_on_severity: ""
+                            fail_on_severity: none
                           resources:
                             limits:
                               memory: ""
@@ -197,7 +218,12 @@ inputSet:
                       spec:
                         artifacts:
                           primary:
-                            primaryArtifactRef: ""
+                            primaryArtifactRef: backend_image
+                            sources:
+                              - identifier: backend_image
+                                type: DockerRegistry
+                                spec:
+                                  tag: latest
       - stage:
           identifier: mep_approval
           template:
@@ -212,9 +238,10 @@ inputSet:
                         spec:
                           approvers:
                             minimumCount: 1
-                            userGroups: ""
+                            userGroups:
+                              - org.DevOps_Team
               delegateSelectors: []
-  name: stftmp
-  identifier: stftmp
+  name: stf v2
+  identifier: stf_v2
   orgIdentifier: stf
   projectIdentifier: Mower
