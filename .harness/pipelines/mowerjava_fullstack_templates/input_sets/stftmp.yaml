@@ -1,0 +1,220 @@
+inputSet:
+  pipeline:
+    identifier: mowerjava_fullstack_templates
+    properties:
+      ci:
+        codebase:
+          connectorRef: account.Github
+          repoName: stfgit/mower-java
+          build:
+            spec:
+              branch: ""
+            type: branch
+    stages:
+      - stage:
+          identifier: source_code_scan
+          template:
+            templateInputs:
+              type: SecurityTests
+              spec:
+                infrastructure:
+                  type: KubernetesDirect
+                  spec:
+                    connectorRef: ""
+                    namespace: harness-ci
+                execution:
+                  steps:
+                    - parallel:
+                        - step:
+                            identifier: owasp
+                            type: Owasp
+                            spec:
+                              advanced:
+                                fail_on_severity: ""
+                              resources:
+                                limits:
+                                  memory: 2Gi
+                                  cpu: 500m
+                        - step:
+                            identifier: aquatrivy
+                            type: AquaTrivy
+                            spec:
+                              advanced:
+                                fail_on_severity: ""
+                              resources:
+                                limits:
+                                  memory: ""
+                                  cpu: ""
+                        - step:
+                            identifier: gitleaks
+                            type: Gitleaks
+                            spec:
+                              advanced:
+                                fail_on_severity: ""
+                              resources:
+                                limits:
+                                  memory: ""
+                                  cpu: ""
+              delegateSelectors: []
+      - parallel:
+          - stage:
+              identifier: mvn_build_and_push
+              template:
+                templateInputs:
+                  type: CI
+                  spec:
+                    infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                        connectorRef: ""
+                        namespace: harness-ci
+                    execution:
+                      steps:
+                        - step:
+                            identifier: mvn_build
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: maven:3.9.6-eclipse-temurin-21
+                              resources:
+                                limits:
+                                  memory: ""
+                                  cpu: ""
+                        - step:
+                            identifier: mvn_test_with_coverage
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: maven:3.9.6-eclipse-temurin-21
+                              resources:
+                                limits:
+                                  memory: ""
+                                  cpu: ""
+                        - step:
+                            identifier: coverage_quality_gate
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: alpine:latest
+                              resources:
+                                limits:
+                                  memory: ""
+                                  cpu: ""
+                        - step:
+                            identifier: build_and_push_docker_image
+                            type: BuildAndPushDockerRegistry
+                            spec:
+                              connectorRef: ""
+                              repo: ""
+                              resources:
+                                limits:
+                                  memory: ""
+                                  cpu: ""
+                  delegateSelectors: []
+          - stage:
+              identifier: npm_build_and_push
+              template:
+                templateInputs:
+                  type: CI
+                  spec:
+                    infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                        connectorRef: ""
+                        namespace: harness-ci
+                    execution:
+                      steps:
+                        - step:
+                            identifier: Install_Dependencies
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: node:20
+                        - step:
+                            identifier: ESLint_Check
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: node:20
+                        - step:
+                            identifier: Build_Application
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: node:20
+                        - step:
+                            identifier: Unit_Tests
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: node:20
+                        - step:
+                            identifier: NPM_Audit
+                            type: Run
+                            spec:
+                              connectorRef: ""
+                              image: node:20
+                        - step:
+                            identifier: BuildAndPushDockerRegistry_1
+                            type: BuildAndPushDockerRegistry
+                            spec:
+                              connectorRef: ""
+                              repo: ""
+      - stage:
+          identifier: scan_images
+          template:
+            templateInputs:
+              type: SecurityTests
+              spec:
+                infrastructure:
+                  type: KubernetesDirect
+                  spec:
+                    connectorRef: ""
+                    namespace: harness-ci
+                execution:
+                  steps:
+                    - step:
+                        identifier: aquatrivy_container
+                        type: AquaTrivy
+                        spec:
+                          advanced:
+                            fail_on_severity: ""
+                          resources:
+                            limits:
+                              memory: ""
+                              cpu: ""
+              delegateSelectors: []
+      - stage:
+          identifier: deploy_dev
+          template:
+            templateInputs:
+              type: Deployment
+              spec:
+                service:
+                  serviceInputs:
+                    serviceDefinition:
+                      type: Kubernetes
+                      spec:
+                        artifacts:
+                          primary:
+                            primaryArtifactRef: ""
+      - stage:
+          identifier: mep_approval
+          template:
+            templateInputs:
+              type: Approval
+              spec:
+                execution:
+                  steps:
+                    - step:
+                        identifier: approval
+                        type: HarnessApproval
+                        spec:
+                          approvers:
+                            minimumCount: 1
+                            userGroups: ""
+              delegateSelectors: []
+  name: stftmp
+  identifier: stftmp
+  orgIdentifier: stf
+  projectIdentifier: Mower
