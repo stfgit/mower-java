@@ -54,116 +54,117 @@ pipeline:
                                 memory: <+input>
                                 cpu: <+input>
             delegateSelectors: <+input>
-    - stage:
-        name: mvn build and push
-        identifier: mvn_build_and_push
-        template:
-          templateRef: account.maven_build_stage_tplt
-          versionLabel: v0.1
-          templateInputs:
-            type: CI
-            spec:
-              infrastructure:
-                type: KubernetesDirect
+    - parallel:
+        - stage:
+            name: mvn build and push
+            identifier: mvn_build_and_push
+            template:
+              templateRef: account.maven_build_stage_tplt
+              versionLabel: v0.1
+              templateInputs:
+                type: CI
                 spec:
-                  connectorRef: <+input>
-                  namespace: <+input>.default(harness-ci)
-              execution:
-                steps:
-                  - step:
-                      identifier: mvn_build
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(maven:3.9.6-eclipse-temurin-21)
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
-                  - step:
-                      identifier: mvn_test_with_coverage
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(maven:3.9.6-eclipse-temurin-21)
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
-                  - step:
-                      identifier: coverage_quality_gate
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(alpine:latest)
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
-                  - step:
-                      identifier: build_and_push_docker_image
-                      type: BuildAndPushDockerRegistry
-                      spec:
-                        connectorRef: <+input>
-                        repo: <+input>
-                        resources:
-                          limits:
-                            memory: <+input>
-                            cpu: <+input>
-            delegateSelectors: <+input>
-    - stage:
-        name: npm build and push
-        identifier: npm_build_and_push
-        template:
-          templateRef: account.npm_build
-          versionLabel: v0.1
-          gitBranch: main
-          templateInputs:
-            type: CI
-            spec:
-              infrastructure:
-                type: KubernetesDirect
+                  infrastructure:
+                    type: KubernetesDirect
+                    spec:
+                      connectorRef: <+input>
+                      namespace: <+input>.default(harness-ci)
+                  execution:
+                    steps:
+                      - step:
+                          identifier: mvn_build
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(maven:3.9.6-eclipse-temurin-21)
+                            resources:
+                              limits:
+                                memory: <+input>
+                                cpu: <+input>
+                      - step:
+                          identifier: mvn_test_with_coverage
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(maven:3.9.6-eclipse-temurin-21)
+                            resources:
+                              limits:
+                                memory: <+input>
+                                cpu: <+input>
+                      - step:
+                          identifier: coverage_quality_gate
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(alpine:latest)
+                            resources:
+                              limits:
+                                memory: <+input>
+                                cpu: <+input>
+                      - step:
+                          identifier: build_and_push_docker_image
+                          type: BuildAndPushDockerRegistry
+                          spec:
+                            connectorRef: <+input>
+                            repo: <+input>
+                            resources:
+                              limits:
+                                memory: <+input>
+                                cpu: <+input>
+                delegateSelectors: <+input>
+        - stage:
+            name: npm build and push
+            identifier: npm_build_and_push
+            template:
+              templateRef: account.npm_build
+              versionLabel: v0.1
+              gitBranch: main
+              templateInputs:
+                type: CI
                 spec:
-                  connectorRef: <+input>
-                  namespace: <+input>.default(harness-ci)
-              execution:
-                steps:
-                  - step:
-                      identifier: Install_Dependencies
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(node:20)
-                  - step:
-                      identifier: ESLint_Check
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(node:20)
-                  - step:
-                      identifier: Build_Application
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(node:20)
-                  - step:
-                      identifier: Unit_Tests
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(node:20)
-                  - step:
-                      identifier: NPM_Audit
-                      type: Run
-                      spec:
-                        connectorRef: <+input>
-                        image: <+input>.default(node:20)
-                  - step:
-                      identifier: BuildAndPushDockerRegistry_1
-                      type: BuildAndPushDockerRegistry
-                      spec:
-                        connectorRef: <+input>
-                        repo: <+input>
+                  infrastructure:
+                    type: KubernetesDirect
+                    spec:
+                      connectorRef: <+input>
+                      namespace: <+input>.default(harness-ci)
+                  execution:
+                    steps:
+                      - step:
+                          identifier: Install_Dependencies
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(node:20)
+                      - step:
+                          identifier: ESLint_Check
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(node:20)
+                      - step:
+                          identifier: Build_Application
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(node:20)
+                      - step:
+                          identifier: Unit_Tests
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(node:20)
+                      - step:
+                          identifier: NPM_Audit
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(node:20)
+                      - step:
+                          identifier: BuildAndPushDockerRegistry_1
+                          type: BuildAndPushDockerRegistry
+                          spec:
+                            connectorRef: <+input>
+                            repo: <+input>
     - stage:
         name: scan images
         identifier: scan_images
