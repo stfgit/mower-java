@@ -104,7 +104,7 @@ inputSet:
                         type: BuildAndPushDockerRegistry
                         spec:
                           connectorRef: org.Dockerhub
-                          repo: stfgit/mower-java
+                          repo: stfgit/mower-java-backend
                           resources:
                             limits:
                               memory: ""
@@ -124,63 +124,51 @@ inputSet:
                 execution:
                   steps:
                     - step:
-                        identifier: Install_Dependencies
-                        type: Run
+                        identifier: Workspace_Validation
                         spec:
-                          connectorRef: org.Dockerhub
-                          image: node:20
-                          command: cd mower-frontend && npm cache clean --force && npm install --prefer-offline --no-audit --no-fund && npx next --version
+                          workingDirectory: "mower-frontend"
+                    - step:
+                        identifier: Install_Dependencies
+                        spec:
+                          workingDirectory: "mower-frontend"
                           resources:
                             limits:
                               memory: 2Gi
                               cpu: 1000m
                     - step:
-                        identifier: ESLint_Check
-                        type: Run
+                        identifier: Code_Quality_Check
                         spec:
-                          connectorRef: org.Dockerhub
-                          image: node:20
-                          command: cd mower-frontend && npm run lint
+                          workingDirectory: "mower-frontend"
                           resources:
                             limits:
                               memory: 1Gi
                               cpu: 500m
                     - step:
                         identifier: Build_Application
-                        type: Run
                         spec:
-                          connectorRef: org.Dockerhub
-                          image: node:20
-                          command: cd mower-frontend && npm run build && ls -la .next/
+                          workingDirectory: "mower-frontend"
                           resources:
                             limits:
                               memory: 2Gi
                               cpu: 1000m
                     - step:
-                        identifier: Unit_Tests
-                        type: Run
+                        identifier: Run_Tests
                         spec:
-                          connectorRef: org.Dockerhub
-                          image: node:20
-                          command: cd mower-frontend && npm test -- --passWithNoTests || echo "Tests to be implemented"
+                          workingDirectory: "mower-frontend"
                           resources:
                             limits:
                               memory: 1Gi
                               cpu: 500m
                     - step:
-                        identifier: NPM_Audit
-                        type: Run
+                        identifier: Security_Audit
                         spec:
-                          connectorRef: org.Dockerhub
-                          image: node:20
-                          command: cd mower-frontend && npm audit --audit-level=high || true
+                          workingDirectory: "mower-frontend"
                           resources:
                             limits:
                               memory: 1Gi
                               cpu: 500m
                     - step:
                         identifier: BuildAndPushDockerRegistry_1
-                        type: BuildAndPushDockerRegistry
                         spec:
                           connectorRef: org.Dockerhub
                           repo: stfgit/mower-java-frontend
@@ -253,7 +241,7 @@ inputSet:
                             userGroups:
                               - org.DevOps_Team
               delegateSelectors: []
-  name: stf
-  identifier: stf
+  name: stf v2
+  identifier: stf_v2
   orgIdentifier: stf
   projectIdentifier: Mower
