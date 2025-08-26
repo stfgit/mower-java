@@ -130,41 +130,113 @@ pipeline:
                   execution:
                     steps:
                       - step:
+                          identifier: Workspace_Validation
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(node:20)
+                            resources:
+                              limits:
+                                memory: <+input>.default(512Mi)
+                                cpu: <+input>.default(500m)
+                              requests:
+                                memory: <+input>.default(256Mi)
+                                cpu: <+input>.default(250m)
+                      - step:
                           identifier: Install_Dependencies
                           type: Run
                           spec:
                             connectorRef: <+input>
                             image: <+input>.default(node:20)
+                            resources:
+                              limits:
+                                memory: <+input>.default(2Gi)
+                                cpu: <+input>.default(1000m)
+                              requests:
+                                memory: <+input>.default(1Gi)
+                                cpu: <+input>.default(500m)
                       - step:
-                          identifier: ESLint_Check
+                          identifier: Code_Quality_Check
                           type: Run
                           spec:
                             connectorRef: <+input>
                             image: <+input>.default(node:20)
+                            resources:
+                              limits:
+                                memory: <+input>.default(1Gi)
+                                cpu: <+input>.default(500m)
+                              requests:
+                                memory: <+input>.default(512Mi)
+                                cpu: <+input>.default(250m)
+                          when:
+                            condition: <+input>.default("true")
                       - step:
                           identifier: Build_Application
                           type: Run
                           spec:
                             connectorRef: <+input>
                             image: <+input>.default(node:20)
+                            resources:
+                              limits:
+                                memory: <+input>.default(4Gi)
+                                cpu: <+input>.default(2000m)
+                              requests:
+                                memory: <+input>.default(2Gi)
+                                cpu: <+input>.default(1000m)
                       - step:
-                          identifier: Unit_Tests
+                          identifier: Run_Tests
                           type: Run
                           spec:
                             connectorRef: <+input>
                             image: <+input>.default(node:20)
+                            resources:
+                              limits:
+                                memory: <+input>.default(2Gi)
+                                cpu: <+input>.default(1000m)
+                              requests:
+                                memory: <+input>.default(1Gi)
+                                cpu: <+input>.default(500m)
+                          when:
+                            condition: <+input>.default("true")
                       - step:
-                          identifier: NPM_Audit
+                          identifier: Security_Audit
                           type: Run
                           spec:
                             connectorRef: <+input>
                             image: <+input>.default(node:20)
+                            resources:
+                              limits:
+                                memory: <+input>.default(1Gi)
+                                cpu: <+input>.default(500m)
+                          when:
+                            condition: <+input>.default("true")
                       - step:
                           identifier: BuildAndPushDockerRegistry_1
                           type: BuildAndPushDockerRegistry
                           spec:
                             connectorRef: <+input>
                             repo: <+input>
+                            dockerfile: <+input>.default(Dockerfile)
+                            context: <+input>.default(.)
+                            buildArgs:
+                              WORKING_DIR: <+input>.default(.)
+                            resources:
+                              limits:
+                                memory: <+input>.default(4Gi)
+                                cpu: <+input>.default(1500m)
+                              requests:
+                                memory: <+input>.default(2Gi)
+                                cpu: <+input>.default(1000m)
+                  variables:
+                    - name: WORKING_DIRECTORY
+                      type: String
+                      value: <+input>.default(.)
+                    - name: NODE_VERSION
+                      type: String
+                      value: <+input>.default(20)
+                    - name: BUILD_MODE
+                      type: String
+                      value: <+input>.default(production)
     - stage:
         name: scan images
         identifier: scan_images
@@ -258,7 +330,7 @@ pipeline:
   name: mower-java - fullstack templates
   identifier: mowerjava_fullstack_templates
   tags:
-    techno: "java"
+    techno: java
     fullstack: ""
     backend: ""
     frontend: ""
