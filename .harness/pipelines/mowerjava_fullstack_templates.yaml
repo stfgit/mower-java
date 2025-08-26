@@ -258,6 +258,7 @@ pipeline:
   name: mower-java - fullstack templates
   identifier: mowerjava_fullstack_templates
   tags:
+    techno: "java"
     fullstack: ""
     backend: ""
     frontend: ""
