@@ -35,6 +35,16 @@ List of started mowers.
 java.io.IOException - File opening issue.
 ***
 
+## Project Architecture
+
+**MowItNow Backend** is now focused solely on:
+- Command-line processing of mower instructions
+- REST API endpoints for remote mower control
+- File-based batch processing
+- Core business logic and mower simulation engine
+
+**Frontend Interface:** The web interface has been separated into its own project `mower-frontend` for independent development and deployment.
+
 ## Requirements
 <pre>
 La société MowItNow a décidé de développer une tondeuse à gazon automatique, destinée aux surfaces rectangulaires.

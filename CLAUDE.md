@@ -213,63 +213,6 @@ Expected output:
 
 ## Web Interface
 
-The application includes a modern web interface for interactive mower control:
+**Note:** The web interface has been moved to a separate project: `mower-frontend`
 
-**Access:** `http://localhost:8080/`
-
-**Features:**
-
-- **Interactive Lawn Grid:** Visual representation with clickable cells
-- **Mower Placement:** Click on grid or use position controls
-- **Manual Control:** Individual command buttons (Left/Right/Forward)
-- **Sequence Mode:** Execute command strings like "GAGAGAGAA"
-- **Batch Mode:** Multiple mowers with different starting positions
-- **Real-time Visualization:** Live mower position and path tracking
-- **Responsive Design:** Works on desktop and mobile devices
-
-**Interface Components:**
-
-- Lawn dimension configuration (1x1 to 20x20)
-- Visual mower with directional arrows (↑ ↓ ← →)
-- Path tracing showing mower's journey
-- Results panel with timestamped operations
-- Error handling and status feedback
-
-## Frontend Development
-
-The project includes a Next.js frontend in `mower-frontend/` with TypeScript and TailwindCSS:
-
-**Frontend Commands:**
-
-```bash
-cd mower-frontend
-
-# Development (uses Turbopack for faster builds)
-npm run dev
-
-# Build and production
-npm run build
-npm run start
-
-# Linting
-npm run lint
-```
-
-**Frontend Technologies:**
-
-- Next.js 15.4.5 with App Router
-- React 19.1.0
-- TypeScript 5
-- TailwindCSS 4
-- Turbopack for development builds
-
-**Docker Build:**
-
-```bash
-# Backend image
-docker build -t stfgit/mower-java .
-
-# Frontend image (from mower-frontend directory)
-cd mower-frontend
-docker build -t stfgit/mower-java-frontend .
-```
+The backend application now focuses solely on the REST API and command-line functionality. For the interactive web interface, see the separate `mower-frontend` project repository.

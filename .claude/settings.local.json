@@ -8,6 +8,9 @@
       "Bash(find:*)",
       "Bash(docker build:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "/Users/STF/Dev/DCP"
+    ]
   }
 }
