@@ -124,12 +124,12 @@ pipeline:
                           identifier: verify_build_artifacts
                           type: Run
                           spec:
-                            connectorRef: <+input>
-                            image: <+input>.default(alpine:latest)
+                            connectorRef: org.Dockerhub
+                            image: alpine:latest
                             resources:
                               limits:
-                                memory: <+input>.default(256Mi)
-                                cpu: <+input>.default(100m)
+                                memory: ""
+                                cpu: ""
                       - step:
                           identifier: build_and_push_docker_image
                           type: BuildAndPushDockerRegistry
@@ -186,6 +186,7 @@ pipeline:
                           artifacts:
                             primary:
                               primaryArtifactRef: javaImage
+                              sources: ""
                     gitBranch: main
                 delegateSelectors:
                   - helm-delegate
