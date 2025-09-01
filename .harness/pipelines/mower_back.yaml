@@ -121,6 +121,16 @@ pipeline:
                   execution:
                     steps:
                       - step:
+                          identifier: verify_build_artifacts
+                          type: Run
+                          spec:
+                            connectorRef: <+input>
+                            image: <+input>.default(alpine:latest)
+                            resources:
+                              limits:
+                                memory: <+input>.default(256Mi)
+                                cpu: <+input>.default(100m)
+                      - step:
                           identifier: build_and_push_docker_image
                           type: BuildAndPushDockerRegistry
                           spec:
@@ -176,7 +186,6 @@ pipeline:
                           artifacts:
                             primary:
                               primaryArtifactRef: javaImage
-                              sources: ""
                     gitBranch: main
                 delegateSelectors:
                   - helm-delegate
