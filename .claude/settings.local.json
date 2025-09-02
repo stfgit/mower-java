@@ -6,7 +6,10 @@
       "Bash(mvn jacoco:check:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "WebSearch",
+      "WebFetch(domain:developer.harness.io)",
+      "WebFetch(domain:community.harness.io)"
     ],
     "deny": [],
     "additionalDirectories": [
