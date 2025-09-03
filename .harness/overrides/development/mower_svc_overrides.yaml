@@ -6,11 +6,11 @@ overrides:
       required: true
     - name: MEMORY_LIMIT
       type: String
-      value: "256Mi"
+      value: "512Mi"
       required: true
     - name: CPU_LIMIT
       type: String
-      value: "200m"
+      value: "500m"
       required: true
     - name: LOG_LEVEL
       type: String
