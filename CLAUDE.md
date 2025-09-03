@@ -307,3 +307,36 @@ The backend application now focuses solely on the REST API and command-line func
 - CORS configuration for cross-origin requests
 - Docker images deployed independently
 - Separate CI/CD pipelines for independent releases
+
+## Template Usage
+
+This project is an example implementation using Harness templates defined in the `harness-generic-template` project. The templates provide reusable CI/CD patterns for:
+
+- **Security Scanning**: OWASP, AquaTrivy, Gitleaks with configurable severity
+- **Maven Build**: Build, test, coverage validation, Docker image creation  
+- **Image Security**: Container vulnerability scanning
+- **Deployment**: Kubernetes deployments with approval workflows
+
+## Artifact Management
+
+**Docker Registry Configuration:**
+- **Registry**: DockerHub (`org.Dockerhub` connector)
+- **Image Path**: `stfgit/mower-java`
+- **Tags**: `<+pipeline.executionId>` and `latest`
+- **Artifact Reference**: Use `<+artifacts.primary.image>` in manifests
+- **Primary Artifact ID**: `javaImage` (defined in service configuration)
+
+**Common Artifact Issues:**
+- Ensure `primaryArtifactRef: javaImage` matches artifact identifier
+- Use `<+artifacts.primary.image>` instead of deprecated `<+artifact.image>`
+- Verify service has `artifacts.primary` configured properly
+
+## Maven Settings for Harness
+
+The project uses custom Maven settings for pipeline optimization:
+```xml
+<!-- Custom settings.xml for Harness pipeline caching -->
+<localRepository>/harness/.m2/repository</localRepository>
+```
+
+This improves build performance by leveraging Harness's Maven cache in CI/CD pipelines.
