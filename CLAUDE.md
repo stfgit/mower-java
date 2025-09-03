@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Workspace Architecture
+
+**This workspace is a cohesive ecosystem** consisting of interconnected projects that demonstrate modern DevSecOps practices using Harness.io platform:
+
+- **harness-generic-template** : Core project containing reusable Harness CI/CD templates, security policies, and pipeline patterns
+- **harness-play (mower-java)** : This project - Java Spring Boot example using the generic templates  
+- **nextly** : Next.js example project using the same template ecosystem
+- **Other projects** : Additional examples demonstrating various technology stacks with shared templates
+
+**Template Relationship:** All projects in this workspace utilize templates defined in `harness-generic-template`, providing consistent CI/CD patterns, security scanning, and deployment workflows across different technology stacks.
+
 ## Project Overview
 
 MowItNow Backend is a Spring Boot application that simulates automatic lawn mowers on rectangular surfaces. Following a clean architecture separation, this project focuses exclusively on backend functionality, providing both command-line interface and REST API endpoints.
@@ -340,3 +351,27 @@ The project uses custom Maven settings for pipeline optimization:
 ```
 
 This improves build performance by leveraging Harness's Maven cache in CI/CD pipelines.
+
+## Development Methodology
+
+**CRITICAL:** Always examine existing projects in this workspace before implementing new Harness configurations.
+
+**Best Practices for Workspace Development:**
+
+1. **Reference Existing Examples First**
+   - Check `nextly` and `mower-frontend` project for Next.js/frontend patterns
+   - Examine other workspace projects for similar configurations
+   - Use proven structures from the ecosystem and harness
+    documentation
+
+2. **Harness Configuration Approach**
+   - Templates are defined in `harness-generic-template` 
+   - Individual projects use these templates with specific configurations
+   - Service overrides follow workspace-established patterns
+
+3. **Validation Strategy**
+   - Verify configurations against working examples in other projects
+   - Test with existing pipeline templates before creating new ones
+   - Maintain consistency with workspace architectural patterns
+
+**Why This Matters:** This workspace has established working patterns and validated configurations. Using these proven approaches prevents configuration errors and maintains ecosystem consistency.
