@@ -7,7 +7,7 @@ image: <+artifacts.primary.image>
 pipelineId: <+pipeline.executionId>
 environment: <+env.name>
 
-# Configuration de l'application
+# Configuration de l'application avec variables d'environnement
 app:
   name: mower-java
   resources:
@@ -15,8 +15,9 @@ app:
       memory: "128Mi"
       cpu: "100m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: <+env.variables.MEMORY_LIMIT>
+      cpu: <+env.variables.CPU_LIMIT>
+  logLevel: <+env.variables.LOG_LEVEL>
 
 # Configuration du job
 job:
@@ -24,7 +25,7 @@ job:
   backoffLimit: 3
   ttlSecondsAfterFinished: 300
 
-# Configuration du deployment
+# Configuration du deployment avec variables d'environnement
 deployment:
-  replicas: 2
+  replicas: <+env.variables.REPLICAS_COUNT>
 
