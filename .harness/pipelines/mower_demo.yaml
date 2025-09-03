@@ -144,7 +144,7 @@ pipeline:
                                 cpu: ""
                             image:
                               type: docker_v2
-                              name: <+input>
+                              name: stfgit/mower-java
                 delegateSelectors:
                   - ""
         - stage:
