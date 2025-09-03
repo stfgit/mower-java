@@ -1,16 +1,18 @@
 overrides:
-  - type: Variable
-    spec:
-      variables:
-        - name: REPLICAS_COUNT
-          type: String
-          value: "1"
-        - name: MEMORY_LIMIT
-          type: String
-          value: "256Mi"
-        - name: CPU_LIMIT
-          type: String
-          value: "200m"
-        - name: LOG_LEVEL
-          type: String
-          value: "DEBUG"
+  variables:
+    - name: REPLICAS_COUNT
+      type: String
+      value: "1"
+      required: true
+    - name: MEMORY_LIMIT
+      type: String
+      value: "256Mi"
+      required: true
+    - name: CPU_LIMIT
+      type: String
+      value: "200m"
+      required: true
+    - name: LOG_LEVEL
+      type: String
+      value: "DEBUG"
+      required: true
