@@ -144,7 +144,7 @@ pipeline:
                                 cpu: ""
                             image:
                               type: docker_v2
-                              name: <+input>.regex("^[a-z0-9]+(?:[._-][a-z0-9]+)*\/[a-z0-9]+(?:[._-][a-z0-9]+)*$")
+                              name: stfgit/mower-java
                 delegateSelectors:
                   - ""
         - stage:
@@ -166,6 +166,7 @@ pipeline:
                           artifacts:
                             primary:
                               primaryArtifactRef: javaImage
+                              sources: ""
                 delegateSelectors:
                   - helm-delegate
         - stage:
