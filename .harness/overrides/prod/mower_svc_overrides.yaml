@@ -2,7 +2,7 @@ overrides:
   variables:
     - name: REPLICAS_COUNT
       type: String
-      value: "3"
+      value: "2"
       required: true
     - name: MEMORY_LIMIT
       type: String
